@@ -9,7 +9,7 @@ org_title: "Why Is PyTorch Compile So Fast: Kernel Fusion"
 org_link: https://pytorch.org/blog/why-is-pytorch-compile-so-fast-kernel-fusion/
 ---
 
-PyTorch의 컴파일러를 사용하면 모델이 더 빠르게, 최대 10배까지 빠르게 실행됩니다. 그런데 실제로 무슨 일이 일어나는 걸까요? 컴파일을 하지 않으면 GPU는 코드에 있는 각 torch 연산마다 커널(kernel), 즉 GPU에서 동작하는 함수를 실행합니다. 이로 인해 두 가지 큰 속도 저하가 발생합니다. 메모리에서 데이터를 옮기는 데 드는 시간과, 매번 새로운 커널을 시작할 때 드는 오버헤드입니다. GPU가 커널을 실행할 때마다 오버헤드 비용을 치르며, 중간 결과가 생길 때마다 메모리에 쓰고 다시 읽어야 합니다.
+PyTorch의 컴파일러를 사용하면 모델이 최대 10배까지 빠르게 실행됩니다. 그런데 실제로 무슨 일이 일어나는 걸까요? 컴파일을 하지 않으면 GPU는 코드에 있는 각 torch 연산마다 커널(kernel), 즉 GPU에서 동작하는 함수를 실행합니다. 이로 인해 두 가지 큰 속도 저하가 발생합니다. 메모리에서 데이터를 옮기는 데 드는 시간과, 매번 새로운 커널을 시작할 때 드는 오버헤드입니다. GPU가 커널을 실행할 때마다 오버헤드 비용을 치르며, 중간 결과가 생길 때마다 메모리에 쓰고 다시 읽어야 합니다.
 > When you use PyTorch's compiler, your model runs faster, up to 10x faster. But what's actually happening? Without compilation, the GPU runs a kernel, a function on the GPU, for each torch operation in your code. This creates two big slowdowns: the time spent moving data in memory, and the overhead of starting each new kernel. Every time the GPU launches a kernel, it pays an overhead cost, and every intermediate result means writing to and reading from memory.
 
 바로 이 지점에서 융합(fusion)이 등장합니다. PyTorch의 Inductor 컴파일러는 서로 의존하는 연산들을 자동으로 묶어 단일하고 효율적인 Triton 커널로 만듭니다. 이렇게 하면 데이터를 레지스터(register)에 가까운 더 빠른 메모리에 유지하면서 커널 오버헤드를 줄일 수 있습니다. 이번 글에서는 융합의 구체적인 예시를 살펴본 뒤, 더 깊이 읽어볼 만한 주제들을 정리합니다. `torch.compile`이 여러분의 PyTorch 연산을 어떻게 최적화된 GPU 코드로 변환하는지 정확하게 확인할 수 있습니다.
