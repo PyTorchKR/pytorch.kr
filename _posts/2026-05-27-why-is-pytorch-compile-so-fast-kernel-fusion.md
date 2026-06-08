@@ -1,6 +1,6 @@
 ---
 layout: blog_detail
-title: "PyTorch Compile은 왜 이렇게 빠를까: 커널 융합(Kernel Fusion)"
+title: "PyTorch Compile은 어떻게 이렇게 빠를까: 커널 융합(Kernel Fusion)"
 author: Morrison Turnansky
 ext_author: Junghwan Park (박정환)
 category: ["pytorch.org", "translation"]
