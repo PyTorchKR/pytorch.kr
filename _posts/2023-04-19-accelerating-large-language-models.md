@@ -4,7 +4,7 @@ title: 가속화된 트랜스포머로 대규모 언어 모델 가속화하기
 org_title: Accelerating Large Language Models with Accelerated Transformers
 author: Lucas Pasqualin, Driss Guessous, Christian Puhrsch, Bertrand Maher, Michael Gschwind
 category: ["pytorch.org", "translation"]
-org_link: https://pytorch.org/blog/announcing-docathon/
+org_link: https://pytorch.org/blog/accelerating-large-language-models/
 discuss_id: 1417
 ---
 
