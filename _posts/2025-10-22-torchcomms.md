@@ -24,21 +24,17 @@ torchcomms를 통해, PyTorch 분산 통신의 차세대 기반을 마련하고 
 > With torchcomms, we're laying the groundwork for the next generation of distributed communication in PyTorch. Our goal is to build a flexible, extensible foundation that enables developers and researchers to move faster, scale further, and target a wider variety of hardware. Specifically, we're working toward the following objectives:
 
 1. **통신 프리미티브의 빠른 프로토타이핑 / Fast Prototyping of Communication Primitives** – 머신러닝 연구자들은 새로운 통신 패러다임을 빠르게 실험할 수 있어야 합니다. torchcomms는 통신을 PyTorch의 핵심 수치 연산 프리미티브와 분리함으로써, 기존 기능을 깨뜨리지 않고 통신 계층을 독립적으로 반복 개선할 수 있게 합니다—새로운 집합 통신, API, 백엔드를 자유롭게 추가할 수 있습니다. 이 설계는 트리 외부(out-of-tree) 백엔드도 지원하여, 연구자와 하드웨어 벤더가 자신의 디바이스와 기능에 맞춘 특화된 통신 스택을 쉽게 통합할 수 있습니다.
-> 1. **Fast Prototyping of Communication Primitives** – Machine learning researchers need to experiment rapidly with new communication paradigms. By decoupling communications from PyTorch's core numeric primitives, torchcomms makes it possible to iterate on communication layers independently—adding new collectives, APIs, or backends without breaking existing functionality. This design also enables out-of-tree backends, allowing researchers and hardware vendors to easily integrate specialized communication stacks tailored to their devices and features.
-
 2. **100K+ GPU로의 확장 / Scaling to 100K+ GPUs** – 최신 학습 워크로드를 수십만 개의 GPU로 확장하려면 통신 리소스 관리 방식을 재고해야 합니다. 지연 초기화(lazy initialization)나 점대점(point-to-point) 연산의 제한된 동시성 의미론 같은 현재 접근 방식은 NCCL과 같은 라이브러리 내에서 확장성을 제약합니다. torchcomms는 즉시 초기화(eager initialization, 백엔드 리소스를 사용자가 명시적으로 관리)와 모델별 힌트를 도입하여 커뮤니케이터, NVLink 버퍼, RoCE 리소스의 할당과 공유를 최적화합니다—진정한 대규모 분산 작업을 위한 길을 열어줍니다.
-> 2. **Scaling to 100K+ GPUs** – Scaling modern training workloads to hundreds of thousands of GPUs requires rethinking how communication resources are managed. Current approaches, such as lazy initialization and limited concurrency semantics for point-to-point operations, constrain scalability within libraries like NCCL. Torchcomms introduces eager initialization (where backend resources are explicitly managed by the user) and model-specific hints to optimize how communicators, NVLink buffers, and RoCE resources are allocated and shared—paving the way for truly massive distributed jobs.
-
 3. **이기종 하드웨어 지원 / Heterogeneous Hardware Support** – 기존 집합 통신 백엔드는 일반적으로 단일 벤더나 하드웨어 제품군에 최적화되어 있습니다. torchcomms는 처음부터 이기종 시스템을 고려하여 설계하고 있으며, 단일 학습 작업 내에서 여러 하드웨어 세대와 벤더에 걸친 혼합 배포를 가능하게 합니다. 이러한 유연성은 생태계가 동종(homogeneous) GPU 클러스터를 넘어 진화함에 따라 매우 중요합니다.
-> 3. **Heterogeneous Hardware Support** – Existing collective backends are typically optimized for a single vendor or hardware family. With torchcomms, we're designing for heterogeneous systems from the ground up—enabling mixed deployments that span multiple hardware generations and vendors within a single training job. This flexibility is critical as the ecosystem evolves beyond homogeneous GPU clusters.
-
 4. **대규모 내결함성 / Fault Tolerance at Scale** – 현재 오픈소스 PyTorch Distributed에는 견고한 내결함성 프로세스 그룹이 부족하여, torchft와 같은 상위 수준 라이브러리의 안정성이 제한됩니다. torchcomms는 내결함성 HSDP 및 내결함성 Streaming DiLoCo와 같은 알고리즘을 대규모로 지원할 수 있는 내결함성 백엔드를 오픈소스로 공개하여 이 격차를 해소하는 것을 목표로 합니다—성능 저하 없이 복원력을 제공합니다.
-> 4. **Fault Tolerance at Scale** – Today's open-source PyTorch Distributed lacks robust fault-tolerant process groups, which limits the reliability of higher-level libraries like torchft. Torchcomms aims to close that gap by open-sourcing a fault-tolerant backend capable of supporting algorithms such as fault-tolerant HSDP and fault-tolerant Streaming DiLoCo at scale—delivering resilience without compromising performance.
-
 5. **단방향 통신 / One-Sided Communication** – 단방향 통신(예: RDMA 스타일 시맨틱)은 강화 학습, 체크포인팅, 대규모 언어 모델에서의 비동기 워크플로우에 점점 더 필수적이 되고 있습니다. torchcomms는 단방향 통신에 대한 일급(first-class) 지원을 제공하여, 분산 프로세스 간의 효율적이고 오버헤드가 낮은 메시지 전달 및 데이터 교환을 가능하게 합니다.
-> 5. **One-Sided Communication** – One-sided communication (e.g., RDMA-style semantics) is increasingly essential for asynchronous workflows in reinforcement learning, checkpointing, and large language models. Torchcomms will provide first-class support for one-sided communication, enabling efficient, low-overhead message passing and data exchange between distributed processes.
-
 6. **디바이스 중심 집합 통신 / Device-Centric Collectives** – 추론과 학습에서 초저지연을 달성하려면, 통신과 연산이 긴밀하게 결합되어야 합니다. torchcomms는 디바이스(예: GPU)에 통신 메타데이터와 로직이 직접 상주할 수 있는 디바이스 중심 집합 통신 API를 개발하고 있습니다. 여기에는 GPU에서의 직접 RDMA 연산(예: IBGDA)과 CPU 프록시 기반 설계가 모두 포함됩니다. 이러한 기능을 통해 개발자는 연산과 통신 작업을 매끄럽게 융합하여, 새로운 수준의 성능을 달성할 수 있습니다.
+
+> 1. **Fast Prototyping of Communication Primitives** – Machine learning researchers need to experiment rapidly with new communication paradigms. By decoupling communications from PyTorch's core numeric primitives, torchcomms makes it possible to iterate on communication layers independently—adding new collectives, APIs, or backends without breaking existing functionality. This design also enables out-of-tree backends, allowing researchers and hardware vendors to easily integrate specialized communication stacks tailored to their devices and features.
+> 2. **Scaling to 100K+ GPUs** – Scaling modern training workloads to hundreds of thousands of GPUs requires rethinking how communication resources are managed. Current approaches, such as lazy initialization and limited concurrency semantics for point-to-point operations, constrain scalability within libraries like NCCL. Torchcomms introduces eager initialization (where backend resources are explicitly managed by the user) and model-specific hints to optimize how communicators, NVLink buffers, and RoCE resources are allocated and shared—paving the way for truly massive distributed jobs.
+> 3. **Heterogeneous Hardware Support** – Existing collective backends are typically optimized for a single vendor or hardware family. With torchcomms, we're designing for heterogeneous systems from the ground up—enabling mixed deployments that span multiple hardware generations and vendors within a single training job. This flexibility is critical as the ecosystem evolves beyond homogeneous GPU clusters.
+> 4. **Fault Tolerance at Scale** – Today's open-source PyTorch Distributed lacks robust fault-tolerant process groups, which limits the reliability of higher-level libraries like torchft. Torchcomms aims to close that gap by open-sourcing a fault-tolerant backend capable of supporting algorithms such as fault-tolerant HSDP and fault-tolerant Streaming DiLoCo at scale—delivering resilience without compromising performance.
+> 5. **One-Sided Communication** – One-sided communication (e.g., RDMA-style semantics) is increasingly essential for asynchronous workflows in reinforcement learning, checkpointing, and large language models. Torchcomms will provide first-class support for one-sided communication, enabling efficient, low-overhead message passing and data exchange between distributed processes.
 > 6. **Device-Centric Collectives** – To achieve ultra-low latency for inference and training, communication and computation must be tightly coupled. Torchcomms is developing device-centric collective APIs, which enable communication metadata and logic to live directly on the device (e.g. the GPU). This includes both direct RDMA operations from the GPU (e.g., IBGDA) and CPU proxy-based designs. These capabilities allow developers to fuse compute and communication operations seamlessly, unlocking new levels of performance.
 
 ### 왜 새로운 API인가? / Why a new API?
@@ -49,7 +45,7 @@ torchcomms를 통해, PyTorch 분산 통신의 차세대 기반을 마련하고 
 torchcomms를 통해, 현재 다른 어떤 통신 라이브러리에도 존재하지 않는 기능을 도입하는 야심찬 목표를 추구하고 있습니다. 빠르게 나아가기 위해서는, 기존 인터페이스에 제약받지 않고 공개적으로 반복하며 설계를 발전시킬 수 있는 자유가 필요합니다. 이는 초기 단계에서 커뮤니티와 함께 실험하고 개선하는 과정에서 API에 호환성이 깨지는 변경이 있을 수 있음을 의미합니다.
 > With torchcomms, we're pursuing a set of ambitious goals—introducing capabilities that don't yet exist in any other communication library today. To move quickly, we need the freedom to iterate in the open and evolve the design without being constrained by existing interfaces. This means that, during its early stages, the API may experience breaking changes as we experiment and refine it in collaboration with the community.
 
-PyTorch Distributed의 기존 c10d API는 다른 제약 조건과 목표를 염두에 두고 설계되었으며, 상당한 기술 부채(technical debt)를 안고 있어 확장하거나 현대화하기 어렵습니다. torchcomms API가 안정화되면, 기존 c10d::Backend 인터페이스를 지원 중단(deprecate)하고 torchcomms를 PyTorch Distributed의 내부 구현으로 채택할 계획입니다. 이 전환은 점진적으로 최소한의 영향으로 이루어질 것입니다—대부분의 사용자와 모델은 기존과 동일하게 작동하면서, 새로운 백엔드의 성능, 확장성, 유연성의 이점을 자동으로 누리게 됩니다.
+PyTorch Distributed의 기존 c10d API는 상당한 기술 부채(technical debt)를 안고 있어 확장하거나 현대화하기 어렵습니다. torchcomms API가 안정화되면, 기존 c10d::Backend 인터페이스를 지원 중단(deprecate)하고 torchcomms를 PyTorch Distributed의 내부 구현으로 채택할 계획입니다. 이 전환은 점진적으로 최소한의 영향으로 이루어질 것입니다—대부분의 사용자와 모델은 기존과 동일하게 작동하면서, 새로운 백엔드의 성능, 확장성, 유연성의 이점을 자동으로 누리게 됩니다.
 > The existing c10d APIs in PyTorch Distributed carry significant technical debt, making them difficult to extend or modernize. As the torchcomms API stabilizes, we plan to deprecate the old c10d::Backend interface and adopt torchcomms as the underlying implementation for PyTorch Distributed. This transition will be done gradually and with minimal disruption—most users and models will continue to work as they do today, while automatically benefiting from the performance, scalability, and flexibility of the new backends.
 
 ## 빠른 시작 / Quickstart
@@ -120,18 +116,19 @@ NCCLX는 널리 사용되는 [NCCL](https://github.com/NVIDIA/nccl) 라이브러
 > NCCLX contains the Meta extension to the popular [NCCL](https://github.com/NVIDIA/nccl) library. NCCLX is production-tested – it is used for large scale training and inference for large language models (LLMs) such as Llama3 and Llama4. Today, all of Meta's generative AI services are backed by NCCLX. Some key features of NCCLX include:
 
 * 확장 가능한 초기화(scalable initialization)
-> * Scalable initialization
 * 제로 카피(zero-copy) 및 SM 비사용 통신
-> * Zero-copy and SM-free communication
 * 커스텀 집합 통신 알고리즘
-> * Custom collective algorithms
 * 네트워크 트래픽 부하 분산
-> * Network traffic load balancing
 * 단방향 통신(one-sided communication)
-> * One-sided communication
 * GPU 상주(GPU-resident) 및 저지연 집합 통신
-> * GPU-resident and low latency collectives
 * 장애 분석기 및 장애 위치 파악
+
+> * Scalable initialization
+> * Zero-copy and SM-free communication
+> * Custom collective algorithms
+> * Network traffic load balancing
+> * One-sided communication
+> * GPU-resident and low latency collectives
 > * Fault analyzer and localization
 
 업스트림 NCCL과 병행하여, 이러한 Meta 자체 최적화와 커스텀 기능을 호스팅하기 위한 별도의 Custom Transport(CTran) 스택을 개발했습니다. CTran은 NVLink, IB/RoCE, TCP 전송을 포함하여, 다양한 하드웨어 루틴을 통해 하위 수준 통신 프리미티브를 지원하고, 다양한 통신 시맨틱(예: 집합 통신, 점대점, RMA)을 위한 통신 알고리즘을 구축합니다.
@@ -161,7 +158,7 @@ torchtitan에 통합하여 새로운 torchcomms API의 호환성과 정확성을
 torchtitan 통합 [링크](https://github.com/pytorch/torchtitan/tree/main/torchtitan/experiments/torchcomms), 통합 코드는 `torchtitan/experiments/torchcomms/` 경로에 있습니다.
 > [Link](https://github.com/pytorch/torchtitan/tree/main/torchtitan/experiments/torchcomms) to torchtitan integration, the integration code will be under path: torchtitan/experiments/torchcomms/.
 
-torchtitan 손실/성능 곡선 (FSDP2 사용):
+torchtitan 손실/성능 곡선 [링크](https://www.internalfb.com/mlhub/pipelines/runs/mast/llama3_8b_comms_dp_memory_test_full_print-64-yifanmao-vmnmdg2?job_attempt=1&version=0&tab=tb_legacy&env=PRODUCTION) (FSDP2 사용):
 > [Link](https://www.internalfb.com/mlhub/pipelines/runs/mast/llama3_8b_comms_dp_memory_test_full_print-64-yifanmao-vmnmdg2?job_attempt=1&version=0&tab=tb_legacy&env=PRODUCTION) to torchtitan loss/performance curves: (with FSDP2)
 
 ![torchtitan 손실 곡선 / torchtitan loss curves](/assets/blog/2025-10-22-torchcomms/2-6.png){:style="width:100%"}
@@ -176,16 +173,17 @@ torchtitan 손실/성능 곡선 (FSDP2 사용):
 > We've made a number of changes to the existing collectives that were inherited from the existing PyTorch Distributed APIs. These are intended to make the high level semantics better match the underlying device semantics and to improve flexibility.
 
 1. 모든 연산은 전역 `dist.*` API 대신 객체 지향 API를 통해 수행됩니다.
-> 1. All operations are done through object oriented APIs rather than using the global dist.* APIs.
 2. 각 `torchcomm.TorchComm` 객체는 단일 디바이스와 커뮤니케이터에 매핑됩니다.
-> 2. Each torchcomm.TorchComm object maps to a single device and communicator.
 3. 백엔드는 즉시 초기화되며, 생성 시 디바이스를 전달해야 합니다.
-> 3. Backends are eagerly initiated and require a device to be passed in at creation time.
 4. 모든 연산은 "전역(global)" 랭크가 아닌 커뮤니케이터 랭크를 사용합니다.
-> 4. All operations use the communicator ranks rather than "global" ranks.
 5. 모든 연산은 발행된 순서대로 실행되며, 동시 연산은 배치(batch) API를 사용해야 합니다.
-> 5. All operations execute in order they were issued and concurrent operations must be run using the batch API.
 6. send/recv는 배치 API를 통해 발행하지 않는 한 동시에 실행되지 않습니다.
+
+> 1. All operations are done through object oriented APIs rather than using the global dist.* APIs.
+> 2. Each torchcomm.TorchComm object maps to a single device and communicator.
+> 3. Backends are eagerly initiated and require a device to be passed in at creation time.
+> 4. All operations use the communicator ranks rather than "global" ranks.
+> 5. All operations execute in order they were issued and concurrent operations must be run using the batch API.
 > 6. send/recvs do not execute concurrently unless issued via the batch API.
 
 ### 윈도우 API / Window APIs
