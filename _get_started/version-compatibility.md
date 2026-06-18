@@ -33,10 +33,22 @@ PyTorch 및 Domain APIs의 버전 호환성을 정리하였습니다. \
   </thead>
   <tbody>
     <tr>
+      <th scope="row"><a href="https://github.com/pytorch/pytorch/releases/tag/v2.12.1" target="_blank">2.12.1</a></th>
+      <td>2026/06/18</td>
+      <td><a href="https://github.com/pytorch/vision/releases/tag/v0.27.1" target="_blank">0.27.1</a></td>
+      <td><em>—</em></td>
+      <td><em>—</em></td>
+      <td><em>—</em></td>
+      <td><em>—</em></td>
+      <td><a href="https://pypi.org/project/torch/2.12.1/" target="_blank">>=3.10, <=3.14</a></td>
+      <td>13.2; 13.0; 12.6</td>
+      <td>7.2</td>
+    </tr>
+    <tr>
       <th scope="row"><a href="https://github.com/pytorch/pytorch/releases/tag/v2.12.0" target="_blank">2.12.0</a></th>
       <td>2026/05/13</td>
       <td><a href="https://github.com/pytorch/vision/releases/tag/v0.27.0" target="_blank">0.27.0</a></td>
-      <td><a href="https://github.com/pytorch/audio/releases/tag/v2.12.0" target="_blank">2.12.0</a></td>
+      <td><em>—</em></td>
       <td><em>—</em></td>
       <td><em>—</em></td>
       <td><em>—</em></td>
@@ -1049,5 +1061,5 @@ PyTorch 2.11 릴리즈에서 지원하는 CUDA 아키텍처 정보입니다.
 </div>
 
 <p class="text-muted text-right mb-0">
-  <small><strong>Last Update:</strong> 2026-05-14</small>
+  <small><strong>Last Update:</strong> 2026-06-18</small>
 </p>
