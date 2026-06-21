@@ -11,7 +11,7 @@ org_link: https://pytorch.org/blog/how-linkedin-uses-pytorch-to-solve-extreme-sc
 
 ![PyTorch LinkedIn 사례 연구 / PyTorch LinkedIn Case Study](/assets/blog/2026-06-01-how-linkedin-uses-pytorch-extreme-scale-optimization/case-study.png){:style="width:100%"}
 
-**요약(TL;DR)**: 이 사례 연구는 LinkedIn이 분산 선형 계획법(linear programming) 솔버인 DuaLip을, GPU로 가속한 PyTorch 버전을 개발하여 어떻게 재설계했는지, 그리고 그 결과 웹 애플리케이션처럼 극단적 규모의 최적화 과제를 어떻게 다루게 되었는지를 보여줍니다. CPU에 묶여 있던 기존 스택에서 벗어난 이번 전환으로 자릿수 단위의 속도 향상과 효율적인 멀티 GPU 확장을 달성하는 동시에 엔지니어링 부담도 줄였습니다.
+**요약(TL;DR)**: 이 사례 연구는 LinkedIn이 분산 선형 계획법(linear programming) 솔버인 DuaLip을 GPU로 가속한 PyTorch 버전으로 개발하여, 웹 애플리케이션과 같은 극단적 규모의 최적화 과제를 다루기 위해 어떻게 재설계했는지를 보여줍니다. CPU에 묶여 있던 기존 스택에서 벗어난 이번 전환으로 자릿수 단위의 속도 향상과 효율적인 멀티 GPU 확장을 달성하는 동시에 엔지니어링 부담도 줄였습니다.
 > **TL;DR**: This case study demonstrates how LinkedIn re-architected its distributed linear programming solver, DuaLip, by developing a GPU-accelerated PyTorch version to handle extreme-scale optimization challenges like web applications. This transition from a CPU-bound stack achieved order-of-magnitude speedups and efficient multi-GPU scaling while reducing engineering overhead.
 
 ## 들어가며 / Introduction
@@ -55,7 +55,7 @@ org_link: https://pytorch.org/blog/how-linkedin-uses-pytorch-to-solve-extreme-sc
 **핵심 병목은 확장성입니다. 문제의 크기가 커질수록, 프로덕션에서 빠르고 반복 가능한 최적화를 지원하려면 메모리와 시간 양쪽 모두에서 효율적이면서도 안정성과 해(solution)의 품질을 유지하는 구현이 필요합니다.**
 > **The key bottleneck is scalability: as the problem size grows, supporting fast, repeatable optimization in production requires implementations that are both memory- and time-efficient, while maintaining stability and solution quality.**
 
-최근 몇 년 사이, 이러한 대규모 LP를 푸는 실용적인 대안으로 1차(first-order) 방법이 부상했습니다. 고전적인 접근과 달리 이 방법들은 변화도(gradient) 정보에만 의존하고 비싼 행렬 분해를 피하기 때문에, 핵심 연산이 행렬-벡터 곱(matrix–vector multiplication)으로 지배됩니다. 특히 원초-쌍대(primal-dual) 정식화가 특히 효과적임이 입증되었습니다. 이 방식은 LP를 안장점(saddle-point) 문제로 다시 표현한 뒤, 수렴할 때까지 원초 변수와 쌍대 변수를 반복적으로 갱신하며, 종종 프로덕션 시스템에 충분히 정확한 해를 얻어냅니다.
+최근 몇 년 사이, 이러한 대규모 LP를 푸는 실용적인 대안으로 1차(first-order) 방법이 부상했습니다. 고전적인 접근과 달리 이 방법들은 변화도(gradient) 정보에만 의존하고 비싼 행렬 분해를 피하기 때문에, 핵심 연산이 행렬-벡터 곱(matrix–vector multiplication)으로 지배됩니다. 그중에서도 주-쌍대(primal-dual) 정식화가 특히 효과적임이 입증되었습니다. 이 방식은 LP를 안장점(saddle-point) 문제로 다시 표현한 뒤, 수렴할 때까지 주 변수와 쌍대 변수를 반복적으로 갱신하며, 종종 프로덕션 시스템에 충분히 정확한 해를 얻어냅니다.
 이러한 흐름의 연구는 Google의 PDLP, LinkedIn의 DuaLip 같은 새로운 세대의 대규모 솔버를 낳았습니다. 그중에서도 DuaLip은 능형 정규화(ridge-regularized) 쌍대 상승법(dual ascent)과 1차 최적화에 기반한 분산 솔버입니다. 매칭 문제의 분해 가능한 구조를 활용하며, 가속화된 변화도 기반 갱신과 효율적인 사영(projection) 연산자를 함께 사용해 극단적인 문제 크기까지 확장합니다.
 > In recent years, first-order methods have emerged as a practical alternative for solving such massive LPs. Unlike classical approaches, these methods rely only on gradient information and avoid expensive matrix factorizations, making their core operations dominated by matrix–vector multiplications. In particular, primal-dual formulations have proven especially effective: they recast the LP as a saddle-point problem and iteratively update primal and dual variables until convergence, often achieving sufficiently accurate solutions for production systems.
 > This line of work has led to a new generation of large-scale solvers, including systems like PDLP at Google and DuaLip at LinkedIn. DuaLip, in particular, is a distributed solver based on ridge-regularized dual ascent and first-order optimization. It exploits the decomposable structure of matching problems and uses accelerated gradient-based updates along with efficient projection operators to scale to extreme problem sizes.
@@ -84,7 +84,7 @@ PyTorch는 네이티브 GPU 가속, 희소 연산과 밀집(dense) 연산 모두
 둘째, 변수를 여러 GPU에 분할하는 한편, all-reduce와 broadcast 같은 집합 통신(collective communication) 패턴을 통해 쌍대 변수를 복제·동기화함으로써 분산 최적화를 달성했고, 이를 통해 장치 수에 거의 선형적으로 확장할 수 있었습니다.
 > Second, distributed optimization was achieved by partitioning variables across GPUs while replicating and synchronizing dual variables through collective communication patterns such as all-reduce and broadcast, allowing near-linear scaling across devices.
 
-셋째, 더 나은 조건수(conditioning)를 위한 행 정규화(row normalization)와 스케일링, 정규화 연속법(regularization continuation) 전략, 그리고 AGD와 FISTA 계열 변형을 포함한 확장 가능한 1차 최적화 방법을 조합하여 수렴 속도를 개선했습니다. 이러한 개선은 정확도를 유지하면서도 풀이 시간을 크게 줄여 줍니다.
+셋째, 더 나은 조건화(conditioning)를 위한 행 정규화(row normalization)와 스케일링, 정규화 연속법(regularization continuation) 전략, 그리고 AGD와 FISTA 계열 변형을 포함한 확장 가능한 1차 최적화 방법을 조합하여 수렴 속도를 개선했습니다. 이러한 개선은 정확도를 유지하면서도 풀이 시간을 크게 줄여 줍니다.
 > Third, convergence speed was improved through a combination of row normalization and scaling for better conditioning, regularization continuation strategies, and scalable first-order optimization methods including AGD and FISTA-style variants. These improvements significantly reduce solve time while maintaining accuracy.
 
 ![분산 변화도 계산 후 NCCL 수행 / Distributed Gradient Computation Followed by NCCL](/assets/blog/2026-06-01-how-linkedin-uses-pytorch-extreme-scale-optimization/fig1.png){:style="width:100%"}
