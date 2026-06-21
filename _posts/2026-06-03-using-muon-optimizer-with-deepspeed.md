@@ -9,7 +9,7 @@ org_link: https://pytorch.org/blog/using-muon-optimizer-with-deepspeed/
 
 ## TL;DR
 
-이제 DeepSpeed가 Muon 옵티마이저를 지원합니다! Muon 옵티마이저는 최전선 AI 연구소들에서 상당한 채택이 이뤄지며 큰 탄력을 받고 있습니다. 그러한 AI 연구소 중 하나가 Moonshot AI로, Kimi-K2-Thinking과 같은 대규모 파운데이션 모델을 학습시키기 위해 Muon 옵티마이저를 채택했습니다. 이번 글에서는 Muon 옵티마이저가 무엇인지, 그리고 DeepSpeed에서 어떻게 동작하는지 자세히 살펴봅니다.
+이제 DeepSpeed가 Muon 옵티마이저를 지원합니다! Muon 옵티마이저는 선도적인 AI 연구소들에서 상당한 채택이 이뤄지며 큰 탄력을 받고 있습니다. 그러한 AI 연구소 중 하나가 Moonshot AI로, Kimi-K2-Thinking과 같은 대규모 파운데이션 모델을 학습시키기 위해 Muon 옵티마이저를 채택했습니다. 이번 글에서는 Muon 옵티마이저가 무엇인지, 그리고 DeepSpeed에서 어떤 성능을 보이는지 자세히 살펴봅니다.
 > DeepSpeed now supports Muon Optimizer! Muon Optimizer has gained great momentum with significant adoption from frontier AI Labs. One of those AI Labs is Moonshot AI, which has adopted Muon Optimizer to train its Large Foundation Model like Kimi-K2-Thinking. This post dives into what Muon Optimizer is and how it performs on DeepSpeed.
 
 ## Muon 옵티마이저란? / What is Muon Optimizer?
