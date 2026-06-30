@@ -2,7 +2,9 @@
 layout: blog_detail
 title: "분에서 초로: Helion 커널을 위한 LLM 기반 자동 튜닝"
 author: Jongsok Choi, Ethan Che, Jason Ansel, Oguz Ulgen
+ext_author: Junghwan Park (박정환)
 category: ["pytorch.org", "translation"]
+date: 2026-06-18 12:00:00
 org_title: "From Minutes to Seconds: LLM-Guided Autotuning for Helion Kernels"
 org_link: https://pytorch.org/blog/from-minutes-to-seconds-llm-guided-autotuning-for-helion-kernels/
 ---
