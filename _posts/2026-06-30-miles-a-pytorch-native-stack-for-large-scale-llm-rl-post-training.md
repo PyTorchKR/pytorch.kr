@@ -9,7 +9,7 @@ org_title: "Miles: A PyTorch-Native Stack for Large-Scale LLM RL Post-Training"
 org_link: https://pytorch.org/blog/miles-a-pytorch-native-stack-for-large-scale-llm-rl-post-training/
 ---
 
-### TL;DR
+## TL;DR
 
 Miles는 대규모 LLM RL 사후 학습(post-training)을 위한 RadixArk의 오픈 소스 프레임워크입니다. 롤아웃(rollout)을 위한 SGLang, 학습을 위한 NVIDIA Megatron-LM, Ray 오케스트레이션(orchestration), PyTorch 네이티브 확장성을 작고 플러그 가능한(pluggable) 트레이너 뒤에 결합하며, 통합된 낮은 정밀도(low-precision) 레시피, MoE를 인식하는 롤아웃/학습 정렬(alignment), 빠른 NVIDIA NCCL/RDMA 가중치 동기화(weight synchronization), 관측 가능성(observability), 장애 허용(fault tolerance)을 기본으로 갖추고 있습니다 — 이를 통해 프런티어(frontier) 규모의 LLM RL을 더 쉽게 구축하고, 재현하고, 운영할 수 있게 합니다.
 > Miles is RadixArk's open source framework for large-scale LLM RL post-training. It composes SGLang for rollout, NVIDIA Megatron-LM for training, Ray orchestration, and PyTorch-native extensibility behind a small, pluggable trainer, with unified low-precision recipes, MoE-aware rollout/training alignment, fast NVIDIA NCCL/RDMA weight synchronization, observability, and fault tolerance built in — making frontier-scale LLM RL easier to build, reproduce, and operate.
