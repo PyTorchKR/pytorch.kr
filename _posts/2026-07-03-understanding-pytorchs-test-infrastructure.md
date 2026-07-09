@@ -27,7 +27,7 @@ PyTorch 테스트는 흔히 여러 디바이스와 dtype에 걸쳐 동적으로 
 PyTorch에 풀 리퀘스트(pull request)를 올려본 적이 있고, CI에서 `TestLinalgCUDA.test_matmul_cuda_float32`처럼 생성된 테스트가 실패하는 걸 보며 그 이름이 어디서 왔는지 궁금했던 적이 있거나 — 혹은 소스에 있는 이름으로 테스트를 실행했더니 "no tests collected"가 나온 적이 있다면, 이 글이 도움이 될 것입니다.
 > If you have ever opened a pull request against PyTorch, watched a generated test like TestLinalgCUDA.test_matmul_cuda_float32 fail in CI, and wondered where that name came from – or tried running a test by its source name and got "no tests collected" – this guide is for you.
 
-[PyTorch의 테스트 인프라](https://github.com/pytorch/pytorch/wiki/Running-and-writing-tests)는 대규모로 동작하도록 만들어졌습니다. 사용된 데코레이터(decorator)와 [OpInfo](https://pytorch.org/blog/understanding-pytorchs-test-infrastructure/#section1)를 통해 제공되는 연산자 메타데이터에 따라, [하나의 테스트 메서드](https://github.com/pytorch/pytorch/blob/main/test/test_ops.py)가 여러 디바이스와 dtype, 연산자에 걸쳐 자동으로 확장될 수 있습니다. 이 덕분에 PyTorch는 수천 개의 조합을 수천 개의 손으로 작성한 테스트 없이도 검증할 수 있습니다. 하지만 이는 소스 파일에 작성한 테스트가 항상 CI가 실행하는 바로 그 테스트는 아니라는 뜻이기도 하며, 처음 마주치면 혼란스러울 수 있습니다.
+[PyTorch의 테스트 인프라](https://github.com/pytorch/pytorch/wiki/Running-and-writing-tests)는 대규모로 동작하도록 만들어졌습니다. 사용된 데코레이터(decorator)와 [OpInfo](#opinfos)를 통해 제공되는 연산자 메타데이터에 따라, [하나의 테스트 메서드](https://github.com/pytorch/pytorch/blob/main/test/test_ops.py)가 여러 디바이스와 dtype, 연산자에 걸쳐 자동으로 확장될 수 있습니다. 이 덕분에 PyTorch는 수천 개의 조합을 수천 개의 손으로 작성한 테스트 없이도 검증할 수 있습니다. 하지만 이는 소스 파일에 작성한 테스트가 항상 CI가 실행하는 바로 그 테스트는 아니라는 뜻이기도 하며, 처음 마주치면 혼란스러울 수 있습니다.
 > [PyTorch's test infrastructure](https://github.com/pytorch/pytorch/wiki/Running-and-writing-tests) is built for scale. Depending on the decorators used and operator metadata provided through [OpInfos,](https://pytorch.org/blog/understanding-pytorchs-test-infrastructure/#section1) a [single test method](https://github.com/pytorch/pytorch/blob/main/test/test_ops.py) can expand across multiple devices, dtypes, and operators automatically. That is what lets PyTorch validate thousands of combinations without thousands of handwritten tests. But it also means the test you write in the source file is not always the exact test that CI runs, which can be confusing the first time you encounter it.
 
 참고: 이 글에서 다루는 많은 헬퍼(helper)는 PyTorch의 내부 테스트 인프라인 `torch.testing._internal` 아래에 있습니다. 여러분 자신의 프로젝트를 테스트한다면, 대신 pytest나 [`torch.testing.assert_close`](https://docs.pytorch.org/docs/2.12/testing.html) 같은 공개 API를 사용하세요.
@@ -110,6 +110,7 @@ PyTorch의 테스트 인프라는 서로 연결된 레이어(layer)의 집합으
 | [test/run_test.py](https://github.com/pytorch/pytorch/blob/main/test/run_test.py) | CI 스타일의 러너, 샤딩(sharding), 영향받은 테스트 선택 |
 
 ### OpInfo: 메타데이터로 연산자 테스트하기 / OpInfos: Testing Operators Through Metadata
+{:#opinfos}
 
 OpInfo는 PyTorch 연산자를 어떻게 테스트해야 하는지 설명하는 메타데이터 항목입니다. 모든 연산자마다 별도의 테스트를 작성하는 대신, PyTorch는 OpInfo 메타데이터를 읽어 여러 연산자에 걸쳐 동일한 검사를 실행하는 범용 테스트 템플릿을 사용합니다.
 > OpInfos are metadata entries that describe how a PyTorch operator should be tested. Instead of writing a separate test for every operator, PyTorch uses generic test templates that read OpInfo metadata and run the same checks across many operators.
@@ -164,7 +165,7 @@ python test/run_test.py -h
 
 ### CI 실패 디버깅하기 / Debugging CI Failures
 
-PyTorch CI 작업이 실패하면, 대개 가장 유용한 정보는 생성된 테스트 이름과 그 디바이스/dtype 접미사, 그리고 샤드입니다. PyTorch CI 작업이 실패하면, 대개 가장 유용한 정보는 생성된 테스트 이름과 그 디바이스/dtype 접미사입니다. 테스트는 원자적(atomic)이어야 하므로, 먼저 `pytest -k`로 그 특정 생성된 테스트를 로컬에서 재현하는 것부터 시작하세요. 샤드 정보는 CI 작업을 찾는 데 도움이 될 수 있지만, 재현을 위한 핵심 정보는 대개 생성된 테스트 이름입니다.
+PyTorch CI 작업이 실패하면, 대개 가장 유용한 정보는 생성된 테스트 이름과 그 디바이스/dtype 접미사, 그리고 샤드입니다. 테스트는 원자적(atomic)이어야 하므로, 먼저 `pytest -k`로 그 특정 생성된 테스트를 로컬에서 재현하는 것부터 시작하세요. 샤드 정보는 CI 작업을 찾는 데 도움이 될 수 있지만, 재현을 위한 핵심 정보는 대개 생성된 테스트 이름입니다.
 > When a PyTorch CI job fails, the most useful details are usually the generated test name and its device/dtype suffix, and the shard. When a PyTorch CI job fails, the most useful details are usually the generated test name and its device/dtype suffix. Since tests are expected to be atomic, start by reproducing the specific generated test locally with pytest -k. Shard information can help locate the CI job, but the generated test name is usually the key detail for reproduction.
 
 #### Dr. CI와 실패 분류(triage) / Dr. CI and Failure Triage
