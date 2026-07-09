@@ -31,7 +31,7 @@ org_link: https://pytorch.org/blog/building-the-future-of-on-device-ai-at-the-ex
 
 ## 1위: SafeScreen AI / 1st Place: SafeScreen AI
 
-SafeScreen AI는 시의적절하면서도 야심 찬 애플리케이션으로 1위를 차지했습니다. 사용자가 노골적이거나 학대적인, 혹은 조작된 미디어에 완전히 노출되기 전에 이를 막아주는 로컬 온디바이스 시각적 안전 계층입니다. 이 앱은 Snapdragon 기반 Android 기기에서 직접 ExecuTorch로 동작하며, 시각 콘텐츠를 실시간으로 온디바이스에서 분석합니다. 유해할 가능성이 있는 콘텐츠가 감지되면, 시스템은 화면에서 곧바로 경고하거나 흐림 처리, 삭제, 마스킹, 차단을 할 수 있습니다.
+SafeScreen AI는 시의적절하면서도 야심 찬 애플리케이션으로 1위를 차지했습니다. 사용자가 노골적이거나 악의적인, 혹은 조작된 미디어에 완전히 노출되기 전에 이를 막아주는 로컬 온디바이스 시각적 안전 계층입니다. 이 앱은 Snapdragon 기반 Android 기기에서 직접 ExecuTorch로 동작하며, 시각 콘텐츠를 실시간으로 온디바이스에서 분석합니다. 유해할 가능성이 있는 콘텐츠가 감지되면, 시스템은 화면에서 곧바로 경고하거나 흐림 처리, 삭제, 마스킹, 차단을 할 수 있습니다.
 > SafeScreen AI took first place with a timely and ambitious application: a local, on-device visual safety layer designed to help protect users from explicit, abusive, and manipulated media before they fully engage with it. The app runs directly on a Snapdragon-powered Android device using ExecuTorch and analyzes visual content on-device in real time. When potentially harmful content is detected, the system can warn, blur, redact, mask, or block that content directly on screen.
 
 SafeScreen AI가 돋보인 이유는 엣지 AI 성능을 명확한 인간의 필요와 연결했다는 점입니다. 시각 분석을 로컬에 두어 낮은 지연 시간과 프라이버시 보호라는 두 가지 특성을 강조했는데, 이는 민감한 이미지나 영상을 먼저 원격 서버로 보내야 한다면 달성하기 어려운 것들입니다. 이 프로젝트는 또한 온디바이스 AI가 단순히 수동적인 탐지 시스템이 아니라, 능동적인 사용자 안전 계층이 될 수 있음을 보여주었습니다.
