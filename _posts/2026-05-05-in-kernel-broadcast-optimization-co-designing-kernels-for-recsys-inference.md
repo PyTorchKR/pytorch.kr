@@ -9,7 +9,7 @@ org_link: https://pytorch.org/blog/in-kernel-broadcast-optimization-co-designing
 
 **TL;DR:**
 
-- 전통적인 RecSys 추론은 공유되는 사용자 임베딩/시퀀스를 모든 후보(candidate)마다 명시적으로 복제합니다. **커널 내 브로드캐스트 최적화(In-Kernel Broadcast Optimization, IKBO)** 는 브로드캐스트 로직을 사용자-후보 상호작용 커널에 직접 융합하는 **커널-모델-시스템 공동 설계(co-design)** 를 통해 이 오버헤드를 제거합니다. 메모리 사용량과 IO 사용률을 모두 줄임으로써, IKBO는 더 높은 처리량을 이끌어냅니다.
+- 전통적인 RecSys 추론은 공유되는 사용자 임베딩/시퀀스를 모든 후보(candidate)마다 명시적으로 복제합니다. **커널 내 브로드캐스트 최적화(In-Kernel Broadcast Optimization, IKBO)** 는 브로드캐스트 로직을 사용자-후보 상호작용 커널에 직접 융합하는 **커널-모델-시스템 공동 설계(co-design)** 를 통해 이 오버헤드를 제거합니다. 메모리 사용량과 IO 사용률을 모두 줄임으로써, IKBO는 더욱 높은 처리량을 이끌어냅니다.
 - IKBO는 연산 집약적인 순(net) 지연 시간을 최대 **2/3까지 감소**시키며, [Meta Adaptive Ranking Model](https://engineering.fb.com/2026/03/31/ml-applications/meta-adaptive-ranking-model-bending-the-inference-scaling-curve-to-serve-llm-scale-models-for-ads/)을 구동하는 요청 중심(request-centric)의 추론 효율적 프레임워크에 **확장성의 근간(scalability backbone)** 역할을 합니다.
 - Meta의 다단계 추천 퍼널(recommendation funnel) 전반에 걸쳐, GPU와 [MTIA](https://ai.meta.com/blog/next-generation-meta-training-inference-accelerator-AI-MTIA/)(Meta Training and Inference Accelerator) 양쪽에서 종단 간(end-to-end)으로 배포되었습니다.
 - IKBO 선형 압축(Linear Compression) 커널은 네 단계에 걸친 점진적 공동 설계 끝에 [TLX](https://github.com/facebookexperimental/triton/tree/tlx)를 통한 워프 특화(warp-specialized) 융합으로 마무리되어, H100 SXM5에서 누적 **약 4배**의 속도 향상을 달성했습니다.
@@ -268,7 +268,7 @@ Transformer와 Set Transformer \[7, 8\] 에서 영감을 받아, RecSys에서는
 종단 간 공동 설계를 활용한 최종 최적화 타깃 어텐션 버전은 공동 설계되지 않은 CuTeDSL FA4-Hopper 대비 **2.4배/6.4배**의 처리량을 달성하며(어텐션 커널만 / 어텐션 커널 + 브로드캐스팅 비용), 지연 시간을 각각 **0.320ms / 1.232ms** 줄입니다(표 2).
 > The ultimate optimized target attention version leveraging e2e co-design achieves **2.4×/6.4×** the throughput of non-co-designed CuTeDSL FA4-Hopper (attn kernel only / attn kernel + broadcasting cost), reducing latency by **0.320ms / 1.232ms** respectively (Table. 2).
 
-### 3.1 IKBO flash attention은 RecSys 경계 조건에서의 IO 바운드 문제를 해결합니다 / IKBO flash attention solves the IO bound issues under RecSys boundary conditions
+### 3.1 IKBO flash attention은 RecSys 경계 조건에서 발생하는 IO 바운드 문제를 해결합니다 / IKBO flash attention solves the IO bound issues under RecSys boundary conditions
 
 ![후보-사용자 브로드캐스팅을 포함한 전통적 SDPA(좌) vs. 융합된 IKBO 타깃 어텐션(우) / Traditional SDPA with candidate-user broadcasting (left) vs. fused IKBO target attention (right)](/assets/blog/2026-05-05-in-kernel-broadcast-optimization-co-designing-kernels-for-recsys-inference/unnamed-4.png){:style="width:100%"}
 *그림 10. 후보-사용자 브로드캐스팅을 포함한 전통적 SDPA(좌) vs. 융합된 IKBO 타깃 어텐션(우). / Fig. 10: Traditional SDPA with candidate-user broadcasting (left) vs. fused IKBO target attention (right).*
