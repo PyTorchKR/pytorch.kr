@@ -9,30 +9,32 @@ order: 2
 published: true
 ---
 
-## Overview
+## 개요
 
-Introducing PyTorch 2.0, our first steps toward the next generation 2-series release of PyTorch. Over the last few years we have innovated and iterated from PyTorch 1.0 to the most recent 1.13 and moved to the newly formed PyTorch Foundation, part of the Linux Foundation.
+파이토치의 차세대 2-시리즈 릴리즈를 향한 첫걸음인 PyTorch 2.0을 소개합니다. 지난 몇 년 동안 PyTorch 1.0부터 최신 1.13까지 혁신과 개선을 거듭해 왔으며, 이제 PyTorch는 Linux 재단 산하에 새로 설립된 PyTorch 재단에서 관리됩니다.
 
-PyTorch’s biggest strength beyond our amazing community is that we continue as a first-class Python integration, imperative style, simplicity of the API and options. PyTorch 2.0 offers the same eager-mode development and user experience, while fundamentally changing and supercharging how PyTorch operates at compiler level under the hood. We are able to provide faster performance and support for Dynamic Shapes and Distributed.
+PyTorch의 가장 큰 강점은 뛰어난 커뮤니티뿐만 아니라, 최고 수준의 Python 연동성, 명령형 스타일, 그리고 간결한 API와 다양한 옵션을 계속 유지한다는 점입니다. PyTorch 2.0은 기존의 Eager Execution(즉시 실행 모드) 개발 방식과 사용자 경험을 그대로 유지하면서, 내부적으로 컴파일러 수준에서 PyTorch의 작동 방식을 근본적으로 개선하고 강화했습니다. 이로 인해 더 빠른 성능은 물론, 동적 크기(Dynamic Shapes)와 분산 처리 지원도 가능해졌습니다.
 
-Below you will find all the information you need to better understand what PyTorch 2.0 is, where it’s going and more importantly how to get started today (e.g., tutorial, requirements, models, common FAQs). There is still a lot to learn and develop but we are looking forward to community feedback and contributions to make the 2-series better and thank you all who have made the 1-series so successful.
+아래에서는 PyTorch 2.0에 대한 정보, 향후 방향성, 그리고 지금 바로 시작하는 방법(예: 튜토리얼, 시스템 요구사항, 모델, FAQ 등)을 쉽게 이해할 수 있는 모든 내용을 제공합니다. 아직 배워야 할 점과 개발해야 할 부분이 많지만, 더 나은 2.0 버전을 만들기 위해 커뮤니티의 피드백과 기여를 기다리고 있습니다. 1-시리즈를 성공적으로 발전시켜 주신 모든 분들께 감사드립니다.
 
-## PyTorch 2.x: faster, more pythonic and as dynamic as ever
+## PyTorch 2.x: 더 빠르고, 파이썬다운 그리고 여전히 동적인
 
-Today, we announce `torch.compile`, a feature that pushes PyTorch performance to new heights and starts the move for parts of PyTorch from C++ back into Python. We believe that this is a substantial new direction for PyTorch -- hence we call it 2.0. `torch.compile` is a fully additive (and optional) feature and hence 2.0 is 100% backward compatible by definition.
+오늘 우리는 PyTorch 성능을 새로운 수준으로 끌어올리고, PyTorch의 일부를 C++에서 다시 Python으로 옮기기 시작하는 `torch.compile` 기능을 발표합니다. 우리는 이것이 PyTorch의 새로운 방향이라고 믿기에, 이를 2.0이라 부릅니다. `torch.compile`은 완전히 추가되는(선택적) 기능이며, 따라서 2.0은 100% 하위 호환성을 보장합니다.
 
-Underpinning `torch.compile` are new technologies -- TorchDynamo, AOTAutograd, PrimTorch and TorchInductor.
 
-- **TorchDynamo** captures PyTorch programs safely using Python Frame Evaluation Hooks and is a significant innovation that was a result of 5 years of our R&D into safe graph capture
+`torch.compile`을 뒷받침하는 기술은 TorchDynamo, AOTAutograd, PrimTorch, TorchInductor과 같은 새로운 기술들입니다.
 
-* **AOTAutograd** overloads PyTorch’s autograd engine as a tracing autodiff for generating ahead-of-time backward traces.
+- **TorchDynamo** 는 Python 프레임 평가 훅(Python Frame Evaluation Hooks)을 사용하여 PyTorch 프로그램을 안전하게 캡처하는 기술로, 우리의 5년간의 연구 개발(R&D) 끝에 이뤄진 중요한 혁신입니다.
 
-- **PrimTorch** canonicalizes ~2000+ PyTorch operators down to a closed set of ~250 primitive operators that developers can target to build a complete PyTorch backend. This substantially lowers the barrier of writing a PyTorch feature or backend.
-- **TorchInductor** is a deep learning compiler that generates fast code for multiple accelerators and backends. For NVIDIA and AMD GPUs, it uses OpenAI Triton as a key building block.
+- **AOTAutograd** 는 PyTorch의 autograd을 오버로드하여 사전 생성 백워드 추적을 생성하는 추적 자동 미분 기술입니다.
 
-TorchDynamo, AOTAutograd, PrimTorch and TorchInductor are written in Python and support dynamic shapes (i.e. the ability to send in Tensors of different sizes without inducing a recompilation), making them flexible, easily hackable and lowering the barrier of entry for developers and vendors.
+- **PrimTorch** 는 2000개 이상의 PyTorch 연산자를 약 250개의 기본 연산자로 정규화하여, 개발자가 완전한 PyTorch 백엔드를 구축할 수 있도록 합니다. 이를 통해 PyTorch 기능이나 백엔드를 작성하는 진입 장벽이 크게 낮아졌습니다.
 
-To validate these technologies, we used a diverse set of 163 open-source models across various machine learning domains. We built this benchmark carefully to include tasks such as Image Classification, Object Detection, Image Generation, various NLP tasks such as Language Modeling, Q&A, Sequence Classification, Recommender Systems and Reinforcement Learning. We separate the benchmarks into three categories:
+- **TorchInductor** 는 여러 가속기와 백엔드를 위한 빠른 코드를 생성하는 딥러닝 컴파일러입니다. NVIDIA와 AMD GPU의 경우, OpenAI Triton을 핵심 구성 요소로 사용합니다.
+
+TorchDynamo, AOTAutograd, PrimTorch, TorchInductor는 모두 Python으로 작성되었으며, 동적 형태를 지원합니다. (예를 들어, 다른 크기의 텐서를 보내도 재컴파일이 발생하지 않습니다) 이 기술들은 유연하고, 쉽게 수정할 수 있으며, 개발자와 벤더들이 쉽게 접근할 수 있도록 해줍니다.
+
+이 기술들을 검증하기 위해, 우리는 다양한 기계 학습 분야에 걸쳐 163개의 오픈소스 모델을 사용했습니다. 우리는 이미지 분류, 객체 탐지, 이미지 생성, 다양한 NLP 작업(예: 언어 모델링, 질의응답, 시퀀스 분류), 추천 시스템, 강화 학습 등과 같은 작업을 포함하도록 벤치마크를 신중하게 구성했습니다. 우리는 이 벤치마크를 세 가지 카테고리로 나누었습니다.
 
 <ul style="margin: 1.5rem 0 1.5rem 0;">
   <li>46 models from <a href="https://github.com/huggingface/transformers" target="_blank">HuggingFace Transformers</a></li>
