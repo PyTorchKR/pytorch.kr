@@ -1,13 +1,72 @@
-<meta property="og:title" content="파이토치 한국 사용자 모임 (PyTorch Korea User Group)" />
-<meta
-  name="description"
-  property="og:description"
-  content="파이토치 한국 사용자 모임에 오신 것을 환영합니다. 딥러닝 프레임워크인 파이토치(PyTorch)를 사용하는 한국어 사용자들을 위해 문서를 번역하고 정보를 공유하고 있습니다."
-/>
-<meta property="og:url" content="https://pytorch.kr" />
-<meta property="og:type" content="website" />
-<meta
-  property="og:image"
-  content="{{ site.url }}{{ site.baseurl }}/assets/images/pytorch-kr-logo.png"
-/>
+{%- comment -%}
+  페이지별 Open Graph / Twitter Card 메타 태그를 생성합니다.
+  페이지 고유 값이 없으면 사이트 기본값으로 폴백합니다.
+{%- endcomment -%}
+
+{%- comment -%} 제목: page.title → site.title {%- endcomment -%}
+{%- assign og_title = page.title | default: site.title -%}
+
+{%- comment -%} 설명: page.description → (블로그 글) 본문 발췌 → site.description {%- endcomment -%}
+{%- assign og_description = page.description -%}
+{%- if og_description == nil or og_description == '' -%}
+  {%- if page.layout == 'blog_detail' -%}
+    {%- assign og_description = page.content -%}
+  {%- endif -%}
+{%- endif -%}
+{%- if og_description == nil or og_description == '' -%}
+  {%- assign og_description = site.description -%}
+{%- endif -%}
+{%- assign og_description = og_description | strip_html | normalize_whitespace | strip | truncate: 200 -%}
+
+{%- comment -%} 유형: 블로그 글이면 article, 그 외에는 website {%- endcomment -%}
+{%- if page.layout == 'blog_detail' -%}
+  {%- assign og_type = 'article' -%}
+{%- else -%}
+  {%- assign og_type = 'website' -%}
+{%- endif -%}
+
+{%- comment -%}
+  이미지: page.image → (블로그 글) 본문 첫 래스터 이미지 → 사이트 기본 이미지.
+  대부분의 소셜 스크래퍼는 og:image로 SVG/데이터 URI를 렌더링하지 못하므로 건너뜁니다.
+{%- endcomment -%}
+{%- assign og_image = page.image -%}
+{%- if og_image == nil or og_image == '' -%}
+  {%- if page.layout == 'blog_detail' and page.content contains '<img' -%}
+    {%- assign img_after = page.content | split: '<img' -%}
+    {%- for part in img_after offset: 1 -%}
+      {%- assign img_src = part | split: 'src="' -%}
+      {%- if img_src[1] -%}
+        {%- assign candidate = img_src[1] | split: '"' | first -%}
+        {%- assign candidate_lc = candidate | downcase -%}
+        {%- unless candidate_lc contains '.svg' or candidate_lc contains 'data:' -%}
+          {%- assign og_image = candidate -%}
+          {%- break -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endif -%}
+{%- if og_image == nil or og_image == '' -%}
+  {%- assign og_image = '/assets/images/pytorch-kr-logo.png' -%}
+{%- endif -%}
+{%- comment -%} 상대경로 이미지는 절대 URL로 변환 {%- endcomment -%}
+{%- unless og_image contains '://' -%}
+  {%- assign og_image = og_image | absolute_url -%}
+{%- endunless -%}
+
+<meta property="og:title" content="{{ og_title | escape }}" />
+<meta name="description" property="og:description" content="{{ og_description | escape }}" />
+<meta property="og:url" content="{{ page.url | absolute_url }}" />
+<meta property="og:type" content="{{ og_type }}" />
+<meta property="og:image" content="{{ og_image }}" />
+<meta property="og:site_name" content="{{ site.title | escape }}" />
+<meta property="og:locale" content="ko_KR" />
+{%- if og_type == 'article' %}
+{% if page.date %}<meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}" />{% endif %}
+{% if page.author %}<meta property="article:author" content="{{ page.author | escape }}" />{% endif %}
+{%- endif %}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ og_title | escape }}" />
+<meta name="twitter:description" content="{{ og_description | escape }}" />
+<meta name="twitter:image" content="{{ og_image }}" />
 <meta name="robots" content="index, follow" />

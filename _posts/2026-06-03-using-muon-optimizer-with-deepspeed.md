@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: "DeepSpeed에서 Muon 옵티마이저 사용하기"
+image: /assets/blog/2026-06-03-using-muon-optimizer-with-deepspeed/hero.png
 author: Zhipeng Wang, Guokai Ma, Peng Du and Chi McIsaac, DeepSpeed team
 category: ["pytorch.org", "translation"]
 org_title: "Using Muon Optimizer with DeepSpeed"

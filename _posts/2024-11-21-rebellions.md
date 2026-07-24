@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: "리벨리온이 파이토치 재단에 일반 멤버로 합류했습니다"
+image: /assets/blog/2024-11-21-rebellions/hero.png
 org_title: "Rebellions Joins the PyTorch Foundation as a General Member"
 category: ["pytorch.org", "translation"]
 org_link: https://pytorch.org/blog/rebellions/

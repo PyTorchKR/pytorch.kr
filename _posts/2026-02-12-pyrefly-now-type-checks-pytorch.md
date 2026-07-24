@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: "Pyrefly, PyTorch 타입 체크 지원"
+image: /assets/blog/2026-02-12-pyrefly-now-type-checks-pytorch/hero.png
 author: PyTorch and Pyrefly Teams at Meta
 category: ["pytorch.org", "translation"]
 org_title: "Pyrefly Now Type Checks PyTorch"
