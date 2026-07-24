@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: "PyTorch 2.11 출시 공지"
+image: /assets/blog/2026-03-23-pytorch-2-11-release-blog/hero.png
 author: PyTorch Team
 category: ["pytorch.org", "translation"]
 org_title: "PyTorch 2.11 Release Blog"

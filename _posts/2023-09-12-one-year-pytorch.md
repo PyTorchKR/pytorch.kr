@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: 파이토치 재단(PyTorch Foundation) 1주년
+image: /assets/blog/2023-09-12-one-year-pytorch/hero.png
 org_title: One Year of PyTorch Foundation
 category: ["pytorch.org", "translation"]
 org_link: https://pytorch.org/blog/one-year-pytorch/

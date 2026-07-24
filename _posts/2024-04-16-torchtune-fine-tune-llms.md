@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: "torchtune: PyTorch를 사용한 쉬운 LLM 파인튜닝"
+image: /assets/blog/2024-04-16-torchtune-fine-tune-llms/hero.png
 org_title: "torchtune: Easily fine-tune LLMs using PyTorch"
 category: ["pytorch.org", "translation"]
 org_link: https://pytorch.org/blog/torchtune-fine-tune-llms/

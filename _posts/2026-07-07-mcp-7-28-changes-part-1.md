@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: "AI 애플리케이션 개발자를 위한 MCP 7-28 소개: 무엇이 사라지고, 무엇이 깨질 수 있는가"
+image: /assets/blog/2026-07-07-mcp-7-28-changes-part-1/hero.png
 author: "Junghwan Park (9bow)"
 category: ["MCP", "AAIF", "community"]
 date: 2026-07-07 12:00:00

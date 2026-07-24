@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: "PyTorch 2.1에 새로 추가된 성능 향상 기능 소개"
+image: /assets/blog/2023-11-29-new-features-for-ai/hero.png
 org_title: "PyTorch 2.1 Contains New Performance Features for AI Developers"
 author: 인텔(Intel)
 category: ["pytorch.org", "translation"]

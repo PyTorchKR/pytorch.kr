@@ -1,6 +1,7 @@
 ---
 layout: blog_detail
 title: "PyTorch 2 논문 및 튜토리얼 @ ASPLOS 2024"
+image: /assets/blog/2024-02-06-pytorch-2-paper-tutorial/hero.png
 category: ["pytorch.org", "translation"]
 org_title: "PyTorch 2 paper and tutorial @ ASPLOS 2024"
 org_link: https://pytorch.org/blog/pytorch-2-paper-tutorial/
