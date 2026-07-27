@@ -13,13 +13,7 @@
   var TOPIC_COUNT = 12;
   var FETCH_TIMEOUT_MS = 8000;
   var CONTAINER_ID = 'community-topics-list';
-  var DEFAULT_THUMBNAIL = 'data:image/svg+xml,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">' +
-      '<rect width="120" height="120" fill="#f3f4f7"/>' +
-      '<text x="60" y="52" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#ee4c2c" opacity="0.4">PyTorch</text>' +
-      '<text x="60" y="76" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#ee4c2c" opacity="0.4">Korea</text>' +
-    '</svg>'
-  );
+  var DEFAULT_THUMBNAIL = '/assets/images/community-topic-placeholder.svg';
 
   function escapeHtml(str) {
     var div = document.createElement('div');
@@ -90,7 +84,7 @@
 
     return (
       '<div class="col-sm-6 col-lg-4 col-xl-3 mb-2">' +
-        '<a href="' + url + '" target="_blank" rel="noopener" class="community-topic-item">' +
+        '<a href="' + url + '" target="_blank" rel="noopener ugc" class="community-topic-item">' +
           '<div class="topic-thumbnail">' +
             '<img src="' + imgSrc + '" alt="" loading="lazy" onerror="this.onerror=null;this.src=\'' + DEFAULT_THUMBNAIL + '\';">' +
           '</div>' +
