@@ -2,6 +2,18 @@
 layout: blog_detail
 title: "TPU 위의 Helion: 이기종 하드웨어 커널 작성을 향하여"
 author: Dunfan Lu, Yifei Xu, Jongsok Choi, Ethan Che, Oguz Ulgen, Jason Ansel, Yarong Mu, Theotime Combes, Emilio Cota, Freya Azad
+authors:
+  - Dunfan Lu
+  - Yifei Xu
+  - Jongsok Choi
+  - Ethan Che
+  - Oguz Ulgen
+  - Jason Ansel
+  - Yarong Mu
+  - Theotime Combes
+  - Emilio Cota
+  - Freya Azad
+image: /assets/blog/2026-07-23-helion-on-tpu-towards-hardware-heterogeneous-kernel-authoring/hero.png
 category: ["pytorch.org", "translation"]
 org_title: "Helion on TPU: Towards Hardware Heterogeneous Kernel Authoring"
 org_link: https://pytorch.org/blog/helion-on-tpu-towards-hardware-heterogeneous-kernel-authoring/

@@ -2,6 +2,8 @@
 layout: blog_detail
 title: "PyTorch 2.13 출시 공지"
 author: PyTorch Foundation
+author_type: Organization
+image: /assets/blog/2026-07-08-pytorch-2-13-release-blog/hero.png
 category: ["pytorch.org", "translation"]
 org_title: "PyTorch 2.13 Release Blog"
 org_link: https://pytorch.org/blog/pytorch-2-13-release-blog/
