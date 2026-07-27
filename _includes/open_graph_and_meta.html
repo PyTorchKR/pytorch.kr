@@ -53,10 +53,11 @@
 {%- unless og_image contains '://' -%}
   {%- assign og_image = og_image | absolute_url -%}
 {%- endunless -%}
+{%- assign canonical_url = page.url | absolute_url -%}
 
 <meta property="og:title" content="{{ og_title | escape }}" />
 <meta name="description" property="og:description" content="{{ og_description | escape }}" />
-<meta property="og:url" content="{{ page.url | absolute_url }}" />
+<meta property="og:url" content="{{ canonical_url }}" />
 <meta property="og:type" content="{{ og_type }}" />
 <meta property="og:image" content="{{ og_image }}" />
 <meta property="og:site_name" content="{{ site.title | escape }}" />
@@ -69,4 +70,39 @@
 <meta name="twitter:title" content="{{ og_title | escape }}" />
 <meta name="twitter:description" content="{{ og_description | escape }}" />
 <meta name="twitter:image" content="{{ og_image }}" />
-<meta name="robots" content="index, follow" />
+<link rel="canonical" href="{{ canonical_url }}" />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+{%- if og_type == 'article' %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": {{ canonical_url | jsonify }}
+  },
+  "headline": {{ og_title | jsonify }},
+  "description": {{ og_description | jsonify }},
+  "image": [{{ og_image | jsonify }}],
+  "datePublished": {{ page.date | date_to_xmlschema | jsonify }},
+  {% if page.last_modified_at %}"dateModified": {{ page.last_modified_at | date_to_xmlschema | jsonify }},{% endif %}
+  {% if page.authors %}"author": [
+    {% for article_author in page.authors %}{
+      "@type": "Person",
+      "name": {{ article_author | jsonify }}
+    }{% unless forloop.last %},{% endunless %}{% endfor %}
+  ],
+  {% elsif page.author_type %}"author": {
+    "@type": {{ page.author_type | jsonify }},
+    "name": {{ page.author | jsonify }}
+  },
+  {% endif %}
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ site.title | jsonify }},
+    "url": {{ site.url | jsonify }}
+  },
+  "inLanguage": {{ site.lang | jsonify }}
+}
+</script>
+{%- endif %}
