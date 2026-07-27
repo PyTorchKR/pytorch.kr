@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="PyTorch Korea">
+  <rect width="120" height="120" fill="#f3f4f7"/>
+  <text x="60" y="52" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#ee4c2c" opacity="0.4">PyTorch</text>
+  <text x="60" y="76" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#ee4c2c" opacity="0.4">Korea</text>
+</svg>
