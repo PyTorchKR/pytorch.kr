@@ -24,7 +24,7 @@ Monarch는 에이전트(agent) 활용에 맞춰 최적화되어 있습니다. �
 이 프로젝트는 2025년 10월 PyTorch 컨퍼런스에서 공개되었으며, 관련 내용은 [PyTorch Monarch 소개](https://pytorch.org/blog/introducing-pytorch-monarch/)에서 읽어볼 수 있습니다. 이번 글에서는 Monarch가 에이전트 주도 학습 개발을 위한 효과적인 프레임워크로 어떻게 발전해 왔는지 다룹니다. 또한 네이티브 Kubernetes 지원, RDMA 개선, 분산 텔레메트리 등 10월 이후의 주요 개선 사항도 함께 살펴봅니다.
 > The project launched at the PyTorch conference in October 2025; you can read about it here: [Introducing PyTorch Monarch](https://pytorch.org/blog/introducing-pytorch-monarch/). This blog covers how Monarch has evolved into an effective framework for agent-driven training development.  It will also cover Monarch’s major improvements since October, including native Kubernetes support, RDMA improvements, distributed telemetry, and more.
 
-## Monarch에서의 에이전트 주도 개발 / Agentic Development in Monarch
+## Monarch로 하는 에이전트 주도 개발 / Agentic Development in Monarch
 
 Monarch는 슈퍼컴퓨팅 클러스터를 호스트(host)·프로세스(proc)·액터(actor)라는 일관된 모델로 표현하고, 여기에 "필요한 것이 다 들어 있는(batteries included)" 인프라를 함께 제공해 여러분의 에이전트에게 초능력을 부여합니다! 에이전트는 실행 중인 코드를 직접 관리하고 디버깅하며, 의존성과 데이터를 빠르게 동기화하고, 새 코드를 실행하고, 어디에 배포되었는지와 무관하게 효율적이고 일관된 방식으로 호스트·프로세스·액터를 추가로 프로비저닝할 수 있습니다.
 > By representing your supercomputing cluster through a coherent model of hosts, procs, and actors, and pairing it with “batteries included” infrastructure, Monarch gives your agent superpowers! It can directly manage and debug running code, rapidly sync dependencies and data, run new code, and provision additional hosts, procs, and actors in an efficient and consistent way regardless of where it is deployed.
@@ -140,7 +140,7 @@ Monarch는 관측 가능성(observability)과 텔레메트리에 크게 힘을 �
 >   - VERL is a popular open-source framework for distributed RLHF post-training. In collaboration with ByteDance’s VeRL team, we developed a Monarch backend for VeRL’s single-controller architecture, implementing new resource pool abstractions built on Monarch’s Job API, colocated multi-role worker support, an RDMA-based transport layer that moves tensors out-of-band for VeRL’s DataProto exchange pattern, and a vLLM server integration that solves actor handle discovery without relying on a global actor registry. We validated that VeRL’s PPO and GRPO training loops can run on Monarch through this backend using VeRL’s hybrid-engine training mode, producing numerically identical results with no performance regression. One finding from this work: while VeRL’s single-controller interface is cleanly abstracted, Ray API usage surfaces throughout the broader codebase — making a non-invasive backend swap more involved than the interface alone suggests. This is a common pattern in frameworks built on Ray, and something the Monarch and VeRL communities can collaborate on over time.
 
 - **AMD**
-  - Monarch는 AMD를 지원 플랫폼으로 추가하며 주요 하드웨어 인프라 전반으로 호환성과 성능을 확장했습니다. AMD의 파트너들이 자사 ROCm 플랫폼에서 Monarch를 검증해, MI300/325/355 클러스터에서 SLURM 기반 오케스트레이션이 매끄럽게 동작하도록 했습니다. 이 통합으로 HPC와 AI 연구에서 널리 쓰이는 익숙한 SLURM 생태계를 활용해 AMD GPU 전반에서 AI 워크로드를 효율적으로 스케줄링하고 관리하며 확장할 수 있습니다.
+  - Monarch는 AMD를 지원 플랫폼으로 추가하며 주요 하드웨어 인프라 전반으로 호환성과 성능을 확장했습니다. AMD 쪽 파트너들이 자사 ROCm 플랫폼에서 Monarch를 검증해, MI300/325/355 클러스터에서 SLURM 기반 오케스트레이션이 매끄럽게 동작하도록 했습니다. 이 통합으로 HPC와 AI 연구에서 널리 쓰이는 익숙한 SLURM 생태계를 활용해 AMD GPU 전반에서 AI 워크로드를 효율적으로 스케줄링하고 관리하며 확장할 수 있습니다.
   - 이들의 노력 덕분에 이제 Monarch는 Mellanox 네트워크 인터페이스를 갖춘 AMD 클러스터에서 GPU 간 빠른 통신을 위한 RDMA(Remote Direct Memory Access)를 지원합니다. 이 하드웨어 조합은 Azure나 Oracle 같은 주요 클라우드 제공업체에서 사용할 수 있으며, 분산 강화 학습과 대규모 AI 워크로드에 필수적인 고처리량·저지연 데이터 전송을 가능하게 합니다.
 
 > - **AMD**
@@ -157,7 +157,7 @@ Monarch는 여러분의 슈퍼컴퓨터를 다루는 API로, 분산 AI 개발을
 이 작업을 가능하게 해 준 Monarch 팀 전체에 감사드립니다. 또한 GitHub의 [주요 기여자들](https://github.com/meta-pytorch/monarch/graphs/contributors)에게 특별히 감사드립니다!
 > Thank you to the whole Monarch team for making this work possible.  Also, a special thanks to our [Top Contributors](https://github.com/meta-pytorch/monarch/graphs/contributors) on GitHub!
 
-- 🙏 Monarch를 Kubernetes와 통합하는 데 도움을 준 Google Cloud와 Runhouse의 파트너들, 그리고 기여해 준 SkyPilot과 AMD의 파트너들에게 특별히 감사드립니다!
+- 🙏 Monarch를 Kubernetes와 통합하는 데 도움을 준 Google Cloud와 Runhouse 쪽 파트너들, 그리고 기여해 준 SkyPilot과 AMD 쪽 파트너들에게 특별히 감사드립니다!
 
 > - 🙏 Special thanks to our partners at Google Cloud and Runhouse for helping integrate monarch with kubernetes, and to our partners at SkyPilot and AMD for their contributions!
 
