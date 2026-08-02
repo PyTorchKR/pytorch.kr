@@ -1,8 +1,9 @@
 ---
 layout: blog_detail
 title: "FBTriton 인프라: 업스트림 반영, 계층적 검증, 이상과 현실"
-author: "Meta PyTorch Team: Xu Zhao, Agron Tsai, Wenyuan Chi, Alexey Loginov"
+author: "Meta Triton Team: Daohang Shi, Xu Zhao, Agron Tsai, Wenyuan Chi, Alexey Loginov"
 authors:
+  - Daohang Shi
   - Xu Zhao
   - Agron Tsai
   - Wenyuan Chi
@@ -38,9 +39,9 @@ Triton은 Meta의 AI 하드웨어 가속 전략에서 근간을 이루는 요소
 
 ## 업스트림 격차 좁히기: 위험도로 나눈 에이전트 기반 번들링 / Closing the Upstream Gap: Risk-partitioned Agentic Bundling
 
-빠르게 움직이는 업스트림과의 격차를 작게 유지하면서 Meta에서 출발한 최적화를 적극적으로 개발하는 일은 fbtriton에게 쉽지 않습니다.  
+빠르게 움직이는 업스트림과의 격차를 작게 유지하면서 Meta에서 출발한 최적화를 적극적으로 개발하는 일은 fbtriton 입장에서는 쉽지 않습니다.  
 다운스트림 포크를 유지하려면 보통 두 전략 중 하나를 골라야 합니다. 주기적으로 트렁크 전체를 리베이스(full-trunk rebase)하거나, 계속 체리픽(cherry-pick)하는 것입니다. 수정 사항을 안정적으로 유지하고, 대규모 리베이스가 낳는 구조적 불확실성과 마찰에서 일상적인 개발을 떼어 놓기 위해 지속적인 체리픽을 택했습니다.  
-가장 큰 마찰은 컴파일러 스택의 아키텍처 차이에서 나옵니다. fbtriton은 레이아웃 인터페이스, 양자화, 워프 특화(warp specialization)에 각기 다른 전략과 설계를 사용합니다.  
+핵심 마찰은 컴파일러 스택의 아키텍처 차이에서 나옵니다. fbtriton은 레이아웃 인터페이스, 양자화, 워프 특화(warp specialization)에 각기 다른 전략과 설계를 사용합니다.  
 CI 엔지니어에게 수동 충돌 해결을 잔뜩 떠안기지 않고 쌓인 백로그를 해소하기 위해, 업스트림 커밋을 큰 저위험 번들과 컨텍스트가 많이 필요한 위험 체인으로 나누는 에이전트 루프(agentic loop)를 만들었습니다.
 > It is not easy for fbtriton to aggressively develop Meta-inspired optimizations while keeping the gap against a fast-moving upstream small.  
 > Maintaining a downstream fork usually forces a choice between two strategies: periodic full-trunk rebases or continuous cherry-picking. We chose continuous cherry-picking to keep our modifications stable and decouple daily development from the structural uncertainty and friction of large rebases.  
@@ -85,12 +86,12 @@ CI 엔지니어에게 수동 충돌 해결을 잔뜩 떠안기지 않고 쌓인 
 ## 계층적 테스트 프레임워크 설계 / Designing the Hierarchical Test Framework
 
 LLVM 버전 상향(version bump)을 포함해 위험한 Triton 변경은 프로덕션 스택 전반에 연쇄적인 회귀(regression)를 일으킬 수 있습니다. 이런 문제가 깔끔한 빌드 실패로 나타나는 경우는 드뭅니다. 대신 학습/서빙 효율의 조용한 회귀(silent regression), PT2 컴파일 시간 증가, 또는 모델 성능(정규화 엔트로피, normalized entropy)의 미묘한 드리프트(drift)로 드러날 수 있습니다.  
-모든 커밋에 대해 이 신호 전체를 평가하는 것은 운영 측면에서도, 비용 측면에서도 현실적이지 않습니다. 국소적인 단일 GPU 정확성 테스트는 몇 초면 끝나지만, 작업(job) 단위 지표를 검증하려면 GPU 클러스터를 몇 시간씩 돌려야 할 수도 있습니다. 실제로는 상대적인 가치와 비용을 기준으로 테스트를 L1/L2/L3 계층으로 정리해 이런 자원 비대칭을 관리합니다.
+모든 커밋에 대해 이 신호 전체를 평가하는 것은 운영 측면에서도, 비용 측면에서도 현실적이지 않습니다. 국소적인 단일 GPU 정확성 테스트는 몇 초면 끝날 수 있지만, 작업(job) 단위 지표를 검증하려면 GPU 클러스터를 몇 시간씩 돌려야 할 수도 있습니다. 실제로는 상대적인 가치와 비용을 기준으로 테스트를 L1/L2/L3 계층으로 정리해 이런 자원 비대칭을 관리합니다.
 > A risky Triton change, including an LLVM version bump, can trigger cascading regressions across the production stack. These issues are rarely clean build failures. Instead, they may appear as silent regressions in training/serving efficiency, increased PT2 compilation time, or subtle drift in model performance (normalized entropy).  
 > Evaluating this entire spectrum of signals for every commit is both operationally and financially impractical. A localized single-GPU correctness test may finish in seconds, while validating job-level metrics may require GPU clusters running for hours. In practice, we manage this resource asymmetry by organizing tests into an L1/L2/L3 hierarchy based on relative value and cost.
 
 **L1: diff 테스트**  
-LIT(LLVM Integrated Tester), Triton 단위 테스트, TLX 튜토리얼 커널 정확성 테스트, 내부 고객의 커널 테스트를 포함한 빠르고 국소적인 테스트입니다. 심각한 고장과 커널 수준의 수치 불일치를 막기 위해 모든 diff에서 실행됩니다.
+LIT(LLVM Integrated Tester), Triton 단위 테스트, TLX 튜토리얼 커널 정확성 테스트, 내부 고객의 커널 테스트를 포함한 빠르고 국소적인 테스트입니다. 심각한 기능 파손과 커널 수준의 수치 불일치를 막기 위해 모든 diff에서 실행됩니다.
 > **L1: Diff tests**  
 > Fast, localized tests, including LITs (LLVM Integrated Tester), Triton unit tests, TLX tutorial kernel correctness tests, and internal customers' kernel tests. These are triggered at every diff to prevent major breakage and kernel-level numeric mismatches.
 
@@ -125,7 +126,7 @@ LIT(LLVM Integrated Tester), Triton 단위 테스트, TLX 튜토리얼 커널 �
 
 ### 핀 업데이트에서 컨텍스트 격차 헤쳐 나가기 / Navigating the Context Gap During Pin Updates
 
-핵심 컴파일러 팀이 플릿(fleet) 전체의 모든 다운스트림 워크로드와 모델 아키텍처를 온전히 파악하고 있기란 불가능합니다. 이 컨텍스트 격차는 내부에도, 더 넓은 OSS 커뮤니티에도 존재합니다.
+핵심 컴파일러 팀으로서는 플릿(fleet) 전체의 모든 다운스트림 워크로드와 모델 아키텍처를 온전히 파악하고 있기란 불가능합니다. 이 컨텍스트 격차는 내부에도, 더 넓은 OSS 커뮤니티에도 존재합니다.
 > As a core compiler team, it is impossible to maintain a complete view of every downstream workload and model architecture across the fleet. This context gap exists both internally and in the broader OSS community.
 
 실현 가능한 유일한 완화책은 팀 사이에 동적이고 지속적인 컨텍스트 공유 루프를 두어, 컴파일러 최적화가 변화하는 플릿의 현실과 계속 맞물려 있게 하는 것입니다.
