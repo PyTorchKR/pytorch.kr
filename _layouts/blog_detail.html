@@ -4,6 +4,18 @@
 
 <body class="blog">
     {% include tag_manager_script.html %}
+    {% comment %} 번역 원문 블로그: category 에 'vllm.ai' 가 있으면 vLLM 공식 블로그, 아니면 PyTorch 공식 블로그 {% endcomment %}
+    {% if page.category contains 'vllm.ai' %}
+        {% assign org_blog_name = 'vLLM 공식 블로그' %}
+        {% assign org_blog_name_en = 'vLLM official blog' %}
+        {% assign org_blog_url = 'https://vllm.ai/blog' %}
+        {% assign org_default_author = 'vLLM Team' %}
+    {% else %}
+        {% assign org_blog_name = 'PyTorch 공식 블로그' %}
+        {% assign org_blog_name_en = 'PyTorch official blog' %}
+        {% assign org_blog_url = 'https://pytorch.org/blog/' %}
+        {% assign org_default_author = 'PyTorch Team' %}
+    {% endif %}
     <div class="main-background blog-background blog-detail-background"></div>
 
     <div class="container-fluid header-holder blog-detail-header">
@@ -32,7 +44,7 @@
                         {% if page.author %}
                             작성: {{ page.author }}. <br />번역: {{ site.default_author }}
                         {% else %}
-                            작성: PyTorch Team, 번역: {{ site.default_author }}
+                            작성: {{ org_default_author }}, 번역: {{ site.default_author }}
                         {% endif %}
                       {% else %}
                         {% if page.author %}
@@ -44,9 +56,9 @@
                     </p>
                     {% if page.category contains 'translation' or page.category contains 'pytorch.org' %}
                     <p class="translation-description">
-                        이 글은 <a href="https://pytorch.org/blog/">PyTorch 공식 블로그</a>의 글을 번역한 것입니다.
+                        이 글은 <a href="{{ org_blog_url }}">{{ org_blog_name }}</a>의 글을 번역한 것입니다.
                         번역 글은 원문을 함께 표시합니다. 원문을 읽으시려면 <a href="{{ page.org_link }}">여기</a>를 클릭하세요.
-                        (This article is a Korean translation of the original post on the <a href="https://pytorch.org/blog/">PyTorch official blog</a>.
+                        (This article is a Korean translation of the original post on the <a href="{{ org_blog_url }}">{{ org_blog_name_en }}</a>.
                         Below translation includes the original text. To read the original post, click <a href="{{ page.org_link }}">here</a>.)
                     </p>
                     {% endif %}
@@ -65,5 +77,18 @@
     {% include blog_comments.html %}
 
     {% include footer.html %}
+
+    {% if page.math %}
+    {% comment %} 수식이 있는 글(front matter math: true)만 MathJax 로드. 설정은 원문(vLLM 블로그)과 동일 {% endcomment %}
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    {% endif %}
 </body>
 </html>
