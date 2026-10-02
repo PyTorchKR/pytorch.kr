@@ -1,0 +1,69 @@
+# 홈페이지 개편 검증 결과
+
+검증일: 2026-10-02, 브랜치: `feat/community-homepage`.
+
+## 구현 결과
+
+- 기존 Jekyll·Bootstrap·SCSS 기반에 프로젝트 5개, 모임·시리즈 5개, 행사 13건을 추가했습니다.
+- 상단 메뉴는 `배우기 / 프로젝트 / 모임·행사 / 블로그 / 문서 / 커뮤니티`의 여섯 항목입니다.
+- 기존 로고·남산 사진·서체·중립 색상·사각 형태를 유지하고, 새 영역의 작은 링크와 주요 버튼에는 대비를 고려한 주황색 `#d63916`을 사용했습니다.
+- 행사 한 파일에서 모임·프로젝트·홈페이지 목록을 생성합니다. vLLM.KR의 세 활동 중 Korea Meetup과 Community Meetup만 회차를 관리합니다.
+- 과거 세미나·컨퍼런스의 공식 영상 31개를 연결했습니다. 제5회 세미나는 음성 녹화 문제로 영상 제공이 제한됨을 안내합니다.
+- 영상은 클릭 시 로드하고, 발표별 공개 자료·코드·후기 링크를 함께 표시할 수 있습니다. 발표자료 바이너리나 미확인 공유 주소는 추가하지 않았습니다.
+- 작성 가이드, 프로젝트/모임/행사 템플릿, `AGENTS.md`, 콘텐츠 검증기, 상태별 렌더링 테스트를 추가했습니다. PR Preview와 운영 빌드에 검증 단계를 연결했습니다.
+
+## 실행한 검증
+
+| 검사 | 결과 |
+|---|---|
+| `ruby scripts/check_content.rb` | 프로젝트 5 · 모임 5 · 행사 13 통과 |
+| `ruby scripts/test_content.rb` | 잘못된 관계·날짜·시간·프로그램·URL·상태·미공개 링크·중복 세션 등 14개 거부 사례 통과 |
+| `bundle exec ruby scripts/test_content_render.rb` | 실제 Liquid 템플릿의 미래/취소/연기/비공개 행사, 모집 시작 전·마감 후·조기 마감, 영상+PDF, 자료 없음, 음성 문제 안내, baseurl 통과 |
+| `JEKYLL_ENV=production bundle exec jekyll build` | 성공, `_site` 생성 |
+| `python3 scripts/check_content_links.py` | 관련 HTML 27개, 내부 링크·자산 참조 1,305개 검사; 누락·중복 ID·h1 오류 없음 |
+| `node --check` | 변경한 JS 3개 구문 오류 없음 |
+| `git diff --check` | 공백 오류 없음 |
+
+로컬 Bundler에는 `BUNDLE_PATH=vendor/bundler`, `BUNDLE_USER_HOME=/tmp/pytorchkr-bundle`을 사용했습니다. GitHub API 인증 토큰 미설정 경고는 발생했지만 빌드는 성공했습니다. GitHub 기반 기여자 메타데이터의 완전성까지 검증했다고 주장하지 않습니다. CI 파일은 로컬에서 확인했으며 원격 Actions 실행이나 배포를 수행하지 않았습니다.
+
+## 실제 브라우저 확인
+
+Playwright CLI와 Chromium에서 로컬 서버 `http://127.0.0.1:4000/`를 확인했습니다.
+
+- 주요 페이지 20개 × 390px·1440px의 40개 조합에서 HTTP 200, 가로 넘침 없음, JavaScript 실행 오류 없음.
+- 홈페이지 320px·768px·1100px·1440px에서 제목·버튼·행사 목록 흐름 확인. 320px에서도 소개 영역과 다음 섹션이 겹치지 않음.
+- 기존 설치·모델 허브·블로그·도메인·행동 강령·소개 페이지를 390px·1100px·1440px에서 확인. 경로 정상, 가로 넘침 없음, 밝은/어두운 헤더의 메뉴 글자색 정상.
+- 데스크톱 메뉴: 한 번 클릭해 열기·다시 클릭해 닫기, ArrowDown으로 하위 링크 이동, Escape로 닫고 포커스 복귀.
+- 모바일 메뉴: 열기·하위 항목 펼치기, 배경 inert 처리, Tab/Shift+Tab 순환, Escape로 닫고 원래 위치 복귀.
+- YouTube iframe은 최초 진입 시 0개. 펼치면 로드되고 닫으면 제거되어 재생이 멈춤. 실제 제4회 오프닝 플레이어의 제목 로드 확인.
+- 320px에서 열린 영상의 폭 260px, 오른쪽 끝 290px, 문서 폭 320px. 플레이어가 본문 여백 안에 유지됨.
+- 브라우저 시각을 신청 마감 이후로 가정해 버튼이 ‘참가 안내 보기’로 바뀌는 것을 확인.
+- vLLM.KR 페이지는 Korea Meetup 2건·Community Meetup 2건을 각각 표시하고 Hands-on 회차 목록은 없음.
+- PhysicalAI Study와 Awesome Physical AI에서 같은 Physical AI 세미나 URL로 연결됨. 프로젝트·모임의 상호 연결과 현재 위치 표시 정상.
+- `AGENTS.md`, 작성 문서·템플릿, 검사 스크립트, 화면 캡처는 공개 빌드 결과에 포함되지 않음.
+
+시각 점검에서 발견한 버튼 색상 충돌, 모바일 섹션 여백, 헤더 색상·펼침 표시, 모바일 메뉴 접근성 이름, 열린 플레이어의 최소 높이로 인한 폭 문제를 수정했습니다. 새로운 주요 버튼에는 배경과 구분되는 키보드 포커스 테두리를 적용했습니다.
+
+확인한 로컬 화면 캡처(재생성 가능, Git에는 포함하지 않음):
+
+- `output/playwright/before-home-desktop.png`, `before-home-mobile.png`: 기존 사이트
+- `output/playwright/home-1440.png`, `home-320.png`: 개편 홈페이지
+- `output/playwright/projects-desktop.png`, `projects-mobile.png`: 프로젝트 목록
+- `output/playwright/mobile-menu.png`: 모바일 메뉴
+- `output/playwright/vllm-mobile.png`: vLLM.KR 소개·회차
+- `output/playwright/events-desktop.png`: 전체 행사 기록
+- `output/playwright/physical-project-desktop.png`, `upcoming-event-desktop.png`: 관계·다가오는 행사
+- `output/playwright/video-mobile-320-final.png`: 실제 로드한 모바일 플레이어
+- `output/playwright/fifth-seminar-mobile.png`: 제5회 영상 제한 안내
+
+## 남은 운영 자료
+
+공개가 확인되지 않은 슬라이드와 최종 발행 전 후기·사진은 버튼이나 가짜 URL을 만들지 않고 비워 두었습니다. 공개 URL을 받으면 기존 행사 파일에 추가할 수 있습니다. 자료용 GitHub Releases 또는 R2 운영 계정·도메인 선택, 자료 공개 동의와 파일 업로드는 별도 운영 작업입니다. 비교·권장안은 [개편 계획](homepage-renewal-plan-2026-10-02.md), 실제 갱신 절차는 [작성 가이드](content-guide.md), 과거 출처 차이는 [복원 근거](archive-restoration-2026-10-02.md)를 참조합니다.
+
+전체 브라우저·보조기술에 대한 접근성 인증, 성능 점수 개선, 모든 외부 동영상의 완전 재생을 검증한 결과는 아닙니다. 기존 페이지에 대한 광범위한 재설계나 의존성 업그레이드는 포함하지 않았습니다.
+
+## PR 제출 전 추가 검토
+
+- 잘못된 타임스탬프의 달력 날짜를 Ruby가 자동 보정하는 문제를 재현 테스트로 확인하고 수정했습니다. 행사·신청 시각 모두 달력 날짜를 먼저 검증합니다.
+- 공개 문서에서 작업용 대화 식별자와 내부 지원사업 파일 경로를 제거했습니다. 공개 출처와 유지보수에 필요한 판단 근거는 유지합니다.
+- 모바일 메뉴를 연 상태에서 데스크톱 폭으로 전환하면 메뉴가 닫히고 배경 inert가 해제되며 홈 링크로 포커스가 복귀하는 것을 확인했습니다.

@@ -1,0 +1,38 @@
+---
+layout: general
+community_page: true
+---
+<nav class="content-breadcrumb" aria-label="현재 위치"><a href="{{ '/' | relative_url }}">홈</a><span aria-hidden="true">/</span><a href="{{ '/groups/' | relative_url }}">모임·행사</a><span aria-hidden="true">/</span><a href="{{ '/events/' | relative_url }}">행사 기록</a></nav>
+<header class="content-heading">
+  <p class="content-eyebrow">{% include event_status.html event=page %}</p>
+  <h1>{{ page.title | escape }}</h1>
+  <p class="content-lead">{{ page.summary | escape }}</p>
+  <dl class="event-facts">
+    <div><dt>일시</dt><dd><time datetime="{{ page.event_date }}">{{ page.event_date | date: '%Y년 %m월 %d일' }}</time>{% if page.starts_at %} {{ page.starts_at | date: '%H:%M' }}{% if page.ends_at %}–{{ page.ends_at | date: '%H:%M' }}{% endif %} (한국 시간){% endif %}</dd></div>
+    {% if page.venue %}<div><dt>장소</dt><dd>{{ page.venue | escape }}</dd></div>{% endif %}
+    {% if page.organizers.size > 0 %}<div><dt>주최</dt><dd>{{ page.organizers | join: ', ' | escape }}</dd></div>{% endif %}
+    {% if page.co_organizers.size > 0 %}<div><dt>공동 주관</dt><dd>{{ page.co_organizers | join: ', ' | escape }}</dd></div>{% endif %}
+    {% if page.hosts.size > 0 %}<div><dt>호스트</dt><dd>{{ page.hosts | join: ', ' | escape }}</dd></div>{% endif %}
+    {% if page.supporters.size > 0 %}<div><dt>지원</dt><dd>{{ page.supporters | join: ', ' | escape }}</dd></div>{% endif %}
+  </dl>
+  <div class="content-actions">
+    {% if page.registration.url %}
+      {% assign now = site.time | date: '%s' | plus: 0 %}{% assign closes = page.registration.closes_at | date: '%s' | plus: 0 %}{% assign opens = page.registration.opens_at | default: '1970-01-01' | date: '%s' | plus: 0 %}
+      {% assign can_register = false %}{% if page.registration.status != 'closed' and page.registration.status != 'not_open' and page.event_status == 'scheduled' and closes > now and opens <= now %}{% assign can_register = true %}{% endif %}
+      <a class="content-button" href="{{ page.registration.url | escape }}"{% if can_register %} data-registration-closes="{{ page.registration.closes_at | escape }}"{% endif %}>{% if can_register %}참가 신청하기{% else %}참가 안내 보기{% endif %} →</a>
+    {% endif %}
+    {% if page.website_url %}<a class="content-button content-button-secondary" href="{{ page.website_url | escape }}">행사 안내 원문 →</a>{% endif %}
+  </div>
+</header>
+{% if page.event_status == 'cancelled' %}<p class="content-notice">취소된 행사입니다. 기존 참가 신청 링크는 안내 확인용으로 제공합니다.</p>{% elsif page.event_status == 'postponed' %}<p class="content-notice">일정 변경 예정입니다. 확정된 일정은 추후 안내합니다.</p>{% endif %}
+{% if page.recording == 'limited' %}<p class="content-notice">음성이 녹음되지 않는 문제가 있어 행사 영상 제공이 제한됩니다.</p>{% elsif page.recording == 'not_recorded' %}<p class="content-notice">녹화하지 않은 행사입니다. 공개 동의를 받은 자료만 안내합니다.</p>{% endif %}
+<div class="content-prose">{{ content }}</div>
+{% if page.sessions.size > 0 %}<section class="content-section"><h2>발표와 자료</h2>{% for session in page.sessions %}{% include session.html session=session %}{% endfor %}</section>{% endif %}
+{% if page.related_links.size > 0 %}<section class="content-section"><h2>후기와 관련 자료</h2>{% include content_links.html links=page.related_links %}</section>{% endif %}
+{% if page.group_ids.size > 0 or page.project_ids.size > 0 %}
+<section class="content-section"><h2>함께하는 모임과 프로젝트</h2><ul class="content-links">
+{% for group in site.groups %}{% if page.group_ids contains group.uid and group.published != false %}<li><a href="{{ group.url | relative_url }}">{{ group.title | escape }} →</a></li>{% endif %}{% endfor %}
+{% for project in site.projects %}{% if page.project_ids contains project.uid and project.published != false %}<li><a href="{{ project.url | relative_url }}">{{ project.title | escape }} →</a></li>{% endif %}{% endfor %}
+</ul></section>{% endif %}
+<p class="content-source">{% if page.source_note %}{{ page.source_note | escape }} · {% endif %}정보 확인: {{ page.last_verified_at | date: '%Y.%m.%d' }}{% for source in page.sources %} · <a href="{{ source | escape }}">{% if forloop.first %}출처{% else %}출처 {{ forloop.index }}{% endif %}</a>{% endfor %}</p>
+<script src="{{ '/assets/community-content.js' | relative_url }}" defer></script>

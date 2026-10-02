@@ -1,0 +1,15 @@
+---
+layout: general
+community_page: true
+navigation_key: groups
+title: 모임·행사
+summary: 관심 있는 주제로 함께 배우고 경험을 나누는 PyTorchKR의 모임과 행사를 소개합니다.
+---
+<header class="content-heading">
+  <p class="content-eyebrow">경험을 나누고, 함께 배우는 자리</p>
+  <h1>모임·행사</h1>
+  <p class="content-lead">관심 있는 주제로 만나 연구와 개발의 경험을 나눕니다.<br>모임별 활동 방식과 공개된 다음 일정을 살펴보세요.</p>
+  <div class="content-actions"><a class="content-button" href="{{ '/events/' | relative_url }}">모든 행사와 발표자료 보기 →</a></div>
+</header>
+<div class="activity-grid">{% assign groups = site.groups | sort: 'order' %}{% for group in groups %}{% unless group.published == false %}{% include activity_card.html item=group %}{% endunless %}{% endfor %}</div>
+<section class="content-section"><h2>다가오는 행사</h2>{% include event_list.html period='upcoming' %}</section>

@@ -1,0 +1,14 @@
+---
+layout: general
+community_page: true
+navigation_key: projects
+title: 프로젝트
+summary: 번역 문서부터 용어집과 탐색 도구까지, PyTorchKR이 함께 만드는 공개 프로젝트를 만나보세요.
+---
+<header class="content-heading">
+  <p class="content-eyebrow">함께 만드는 오픈소스</p>
+  <h1>프로젝트</h1>
+  <p class="content-lead">번역 문서부터 용어집과 탐색 도구까지.<br>사용하고, 의견을 나누고, 함께 개선할 수 있습니다.</p>
+</header>
+<div class="activity-grid">{% assign projects = site.projects | sort: 'order' %}{% for project in projects %}{% unless project.published == false %}{% include activity_card.html item=project %}{% endunless %}{% endfor %}</div>
+<aside class="content-notice">작은 수정도 기여의 시작입니다. 각 프로젝트의 GitHub에서 사용 방법과 기여 안내를 확인해 주세요.</aside>

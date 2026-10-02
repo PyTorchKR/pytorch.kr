@@ -53,6 +53,11 @@ jobs:
         bundler --version
         gem install rake
         bundle check || bundle install --jobs 4 --retry 3
+    - name: Validate community content and templates
+      run: |
+        ruby scripts/check_content.rb
+        ruby scripts/test_content.rb
+        bundle exec ruby scripts/test_content_render.rb
     - name: Initialize & update hub submodule
       run: |
         git submodule deinit -f . && git submodule update --init --recursive
@@ -65,6 +70,8 @@ jobs:
         JEKYLL_GITHUB_TOKEN: ${{ secrets.JEKYLL_GITHUB_TOKEN }}
       run: |
         JEKYLL_ENV=preview bundle exec jekyll build
+    - name: Check community page links
+      run: python3 scripts/check_content_links.py
     - name: Deploy to surge.sh
       if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
       env:
