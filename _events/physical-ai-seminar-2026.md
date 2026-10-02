@@ -24,7 +24,7 @@ registration:
 last_verified_at: '2026-10-02'
 ---
 
-## 함께 살펴볼 내용
+## 세미나 주제
 
 Awesome Physical AI를 함께 만드는 스터디의 활동과 Physical AI 분야의 경험을 공유하는 기술 세미나입니다.
 

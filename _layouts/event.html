@@ -30,7 +30,7 @@ community_page: true
 {% if page.sessions.size > 0 %}<section class="content-section"><h2>발표와 자료</h2>{% for session in page.sessions %}{% include session.html session=session %}{% endfor %}</section>{% endif %}
 {% if page.related_links.size > 0 %}<section class="content-section"><h2>후기와 관련 자료</h2>{% include content_links.html links=page.related_links %}</section>{% endif %}
 {% if page.group_ids.size > 0 or page.project_ids.size > 0 %}
-<section class="content-section"><h2>함께하는 모임과 프로젝트</h2><ul class="content-links">
+<section class="content-section"><h2>관련 모임·프로젝트</h2><ul class="content-links">
 {% for group in site.groups %}{% if page.group_ids contains group.uid and group.published != false %}<li><a href="{{ group.url | relative_url }}">{{ group.title | escape }} →</a></li>{% endif %}{% endfor %}
 {% for project in site.projects %}{% if page.project_ids contains project.uid and project.published != false %}<li><a href="{{ project.url | relative_url }}">{{ project.title | escape }} →</a></li>{% endif %}{% endfor %}
 </ul></section>{% endif %}

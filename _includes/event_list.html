@@ -30,4 +30,4 @@
     </li>
   {% endfor %}
 </ul>
-{% if count == 0 %}<p class="content-empty">{% if include.period == 'upcoming' %}공개된 다음 일정이 없습니다. 새로운 행사가 정해지면 안내하겠습니다.{% else %}공개된 행사 기록을 이곳에서 이어갑니다.{% endif %}</p>{% endif %}
+{% if count == 0 %}<p class="content-empty">{% if include.period == 'upcoming' %}등록된 예정 행사가 없습니다.{% else %}등록된 행사 기록이 없습니다.{% endif %}</p>{% endif %}

@@ -4,7 +4,7 @@
 
 ## 구현 결과
 
-- 기존 Jekyll·Bootstrap·SCSS 기반에 프로젝트 5개, 모임·시리즈 5개, 행사 13건을 추가했습니다.
+- 기존 Jekyll·Bootstrap·SCSS 기반에 프로젝트 6개, 모임·시리즈 4개, 행사 13건을 추가했습니다.
 - 상단 메뉴는 `배우기 / 프로젝트 / 모임·행사 / 블로그 / 문서 / 커뮤니티`의 여섯 항목입니다.
 - 기존 로고·남산 사진·서체·중립 색상·사각 형태를 유지하고, 새 영역의 작은 링크와 주요 버튼에는 대비를 고려한 주황색 `#d63916`을 사용했습니다.
 - 행사 한 파일에서 모임·프로젝트·홈페이지 목록을 생성합니다. vLLM.KR의 세 활동 중 Korea Meetup과 Community Meetup만 회차를 관리합니다.
@@ -16,15 +16,15 @@
 
 | 검사 | 결과 |
 |---|---|
-| `ruby scripts/check_content.rb` | 프로젝트 5 · 모임 5 · 행사 13 통과 |
+| `ruby scripts/check_content.rb` | 프로젝트 6 · 모임 4 · 행사 13 통과 |
 | `ruby scripts/test_content.rb` | 잘못된 관계·날짜·시간·프로그램·URL·상태·미공개 링크·중복 세션 등 14개 거부 사례 통과 |
 | `bundle exec ruby scripts/test_content_render.rb` | 실제 Liquid 템플릿의 미래/취소/연기/비공개 행사, 모집 시작 전·마감 후·조기 마감, 영상+PDF, 자료 없음, 음성 문제 안내, baseurl 통과 |
 | `JEKYLL_ENV=production bundle exec jekyll build` | 성공, `_site` 생성 |
-| `python3 scripts/check_content_links.py` | 관련 HTML 27개, 내부 링크·자산 참조 1,305개 검사; 누락·중복 ID·h1 오류 없음 |
+| `python3 scripts/check_content_links.py` | 관련 HTML 28개, 내부 링크·자산 참조 1,897개 검사; 누락·중복 ID·h1 오류 없음 |
 | `node --check` | 변경한 JS 3개 구문 오류 없음 |
 | `git diff --check` | 공백 오류 없음 |
 
-로컬 Bundler에는 `BUNDLE_PATH=vendor/bundler`, `BUNDLE_USER_HOME=/tmp/pytorchkr-bundle`을 사용했습니다. GitHub API 인증 토큰 미설정 경고는 발생했지만 빌드는 성공했습니다. GitHub 기반 기여자 메타데이터의 완전성까지 검증했다고 주장하지 않습니다. CI 파일은 로컬에서 확인했으며 원격 Actions 실행이나 배포를 수행하지 않았습니다.
+로컬 Bundler에는 `BUNDLE_PATH=vendor/bundler`, `BUNDLE_USER_HOME=/tmp/pytorchkr-bundle`을 사용했습니다. GitHub API 인증 토큰 미설정 경고는 발생했지만 빌드는 성공했습니다. GitHub 기반 기여자 메타데이터의 완전성까지 검증했다고 주장하지 않습니다. 최초 제출 커밋의 PR Preview Actions는 통과했습니다. 아래 추가 검토 내용은 후속 수정의 로컬 검증 결과입니다.
 
 ## 실제 브라우저 확인
 
@@ -67,3 +67,16 @@ Playwright CLI와 Chromium에서 로컬 서버 `http://127.0.0.1:4000/`를 확�
 - 잘못된 타임스탬프의 달력 날짜를 Ruby가 자동 보정하는 문제를 재현 테스트로 확인하고 수정했습니다. 행사·신청 시각 모두 달력 날짜를 먼저 검증합니다.
 - 공개 문서에서 작업용 대화 식별자와 내부 지원사업 파일 경로를 제거했습니다. 공개 출처와 유지보수에 필요한 판단 근거는 유지합니다.
 - 모바일 메뉴를 연 상태에서 데스크톱 폭으로 전환하면 메뉴가 닫히고 배경 inert가 해제되며 홈 링크로 포커스가 복귀하는 것을 확인했습니다.
+
+## 디자인·문구와 홈 구성 후속 검토
+
+- 운영 사이트의 기존 메인 Hero, 블로그, 커뮤니티, 주요 기능, 설치·클라우드 안내, 생태계 순서를 유지했습니다. 커뮤니티 최신 글 아래에 프로젝트·모임/행사 두 섹션만 추가했습니다.
+- 프로젝트는 공개 항목에서 빌드 시 무작위 3개, 행사는 예정·지난 일정을 함께 행사일 내림차순 3개를 표시합니다. 검증 당시 행사 순서는 2026-11-21, 2026-10-14, 2026-09-30입니다.
+- 프로젝트·모임·행사 목록에 기존 사진을 재사용한 공통 Hero를 추가했습니다. 홍보성 제목을 실제 주제·산출물 중심의 설명으로 바꾸고 본문의 780px·소개문의 760px 제한과 강제 줄바꿈을 제거했습니다.
+- 프로젝트·모임 드롭다운은 컬렉션의 공개 항목을 자동으로 읽습니다. CoreSIG는 프로젝트로 옮겨 현재 공개 강의 사이트와 PyTorchKR 제공 계획을 구분했습니다. 기존 모임 주소는 같은 도메인의 프로젝트 주소로 이동합니다.
+- 렌더링 테스트에 Hero, baseurl, 두 메뉴의 자동 생성·비공개 제외, 홈 3개 제한·중복 없음, 미래·과거 통합 정렬 검사를 추가했습니다. 기존 상태·미디어 검사와 모두 통과했습니다.
+- Chromium에서 주요 10개 페이지 × 320/390/768/1100/1440px의 50개 조합을 확인했습니다. HTTP 200, 가로 넘침·누락된 Hero 이미지·JavaScript 오류 없음. 사진과 본문, 홈 추가 섹션 및 드롭다운의 실제 화면도 확인했습니다.
+- 홈페이지는 1099px도 추가 확인했습니다. 모바일·태블릿의 영문 제목 들여쓰기를 제거하고 반응형 글자 크기를 적용해 헤더와 겹치거나 사진 밖으로 빠지지 않습니다.
+- 1100px·1440px에서 모든 드롭다운의 화면 내 표시, ArrowDown 진입·Escape 닫기·포커스 복귀를 확인했습니다. 320px·390px에서 하위 메뉴, Tab 순환, Escape와 포커스 복귀를 확인했습니다.
+
+후속 화면 캡처: `output/playwright/final-home-*.png`, `final-projects-1440.png`, `final-groups-390.png`, `final-home-projects.png`, `final-home-events.png`, `final-menu-projects.png`, `final-mobile-menu-320.png`. 캡처는 Git과 공개 빌드에서 제외합니다.

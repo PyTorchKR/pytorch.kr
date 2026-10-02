@@ -2,7 +2,7 @@
 <html lang="{{ site.lang }}">
 {% include head.html %}
 
-<body class="general{% if page.community_page or layout.community_page %} community-page{% endif %}">
+<body class="general{% if page.community_page or layout.community_page %} community-page{% endif %}{% if page.hero_image %} section-page{% endif %}">
   <a class="skip-link" href="#main-content">본문으로 이동</a>
   {% include tag_manager_script.html %}
   <div class="container-fluid header-holder blog-detail-header">
@@ -12,6 +12,7 @@
   </div>
 
   <main id="main-content" class="main-content-wrapper">
+    {% if page.hero_image %}{% include section_hero.html %}{% endif %}
     <div class="main-content">
       <div class="container">
         <article class="pytorch-article">

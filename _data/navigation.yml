@@ -26,13 +26,24 @@ main_menu:
 
   - title: "프로젝트"
     key: "projects"
-    url: "/projects/"
-    url_type: "baseurl"
+    has_dropdown: true
+    collection: projects
+    dropdown_items:
+      - title: "모든 프로젝트"
+        url: "/projects/"
+        url_type: "baseurl"
 
   - title: "모임·행사"
     key: "groups"
-    url: "/groups/"
-    url_type: "baseurl"
+    has_dropdown: true
+    collection: groups
+    dropdown_items:
+      - title: "모든 모임"
+        url: "/groups/"
+        url_type: "baseurl"
+      - title: "행사 일정·발표자료"
+        url: "/events/"
+        url_type: "baseurl"
 
   - title: "블로그"
     key: "blog"

@@ -5,10 +5,7 @@
         {% if item.has_dropdown %}
           <button type="button" class="nav-toggle with-down-arrow" aria-expanded="false" aria-controls="desktop-menu-{{ item.key }}" data-nav-toggle>{{ item.title }}</button>
           <div id="desktop-menu-{{ item.key }}" class="{{ item.key }}-dropdown-menu dropdown-menu" hidden>
-            {% for dropdown_item in item.dropdown_items %}
-              {% if dropdown_item.url_type == 'baseurl' %}{% assign final_url = dropdown_item.url | relative_url %}{% else %}{% assign final_url = dropdown_item.url %}{% endif %}
-              <a href="{{ final_url }}" class="nav-dropdown-item"{% if dropdown_item.target %} target="{{ dropdown_item.target }}" rel="noopener"{% endif %}><span class="dropdown-title">{{ dropdown_item.title }}{% if dropdown_item.external %} <span aria-hidden="true">↗</span><span class="visually-hidden"> (외부 사이트)</span>{% endif %}</span></a>
-            {% endfor %}
+            {% include dropdown_links.html item=item %}
           </div>
         {% else %}
           {% if item.url_type == 'baseurl' %}{% assign final_url = item.url | relative_url %}{% elsif item.url_type == 'external_urls' %}{% assign final_url = site.external_urls[item.url_key] %}{% else %}{% assign final_url = item.url %}{% endif %}

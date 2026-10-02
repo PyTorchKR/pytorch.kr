@@ -9,10 +9,7 @@
         {% if item.has_dropdown %}
           <button type="button" class="mobile-nav-toggle" aria-label="{{ item.title }}" aria-expanded="false" aria-controls="mobile-menu-{{ item.key }}">{{ item.title }}</button>
           <ul id="mobile-menu-{{ item.key }}" class="mobile-submenu" hidden>
-            {% for dropdown_item in item.dropdown_items %}
-              {% if dropdown_item.url_type == 'baseurl' %}{% assign final_url = dropdown_item.url | relative_url %}{% else %}{% assign final_url = dropdown_item.url %}{% endif %}
-              <li><a href="{{ final_url }}"{% if dropdown_item.target %} target="{{ dropdown_item.target }}" rel="noopener"{% endif %}>{{ dropdown_item.title }}{% if dropdown_item.external %} <span aria-hidden="true">↗</span>{% endif %}</a></li>
-            {% endfor %}
+            {% include dropdown_links.html item=item mobile=true %}
           </ul>
         {% else %}
           {% if item.url_type == 'baseurl' %}{% assign final_url = item.url | relative_url %}{% elsif item.url_type == 'external_urls' %}{% assign final_url = site.external_urls[item.url_key] %}{% else %}{% assign final_url = item.url %}{% endif %}

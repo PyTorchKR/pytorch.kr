@@ -12,6 +12,6 @@ last_verified_at: '2026-10-02'
 
 ## Build · Serve · Run
 
-모델을 만들고, 효율적으로 서비스하고, 실제 애플리케이션에 적용하는 경험을 나눕니다. 연도별 행사 소개와 공개 기록을 이곳에서 이어갑니다.
+모델 개발(Build), 추론·서빙(Serve), AI 애플리케이션(Run)을 주제로 발표를 구성합니다.
 
 [PyTorch Day Korea 행사 사이트](https://pytorchday.kr/)에서 해당 연도의 프로그램과 참가 안내를 확인해 주세요.

@@ -10,8 +10,8 @@ community_page: true
   <p class="content-lead">{{ page.summary | escape }}</p>
   {% if page.website_url or page.repository_url %}
   <div class="content-actions">
-    {% if page.website_url %}<a class="content-button" href="{{ page.website_url | escape }}">{% if page.uid == 'tutorials-kr' %}튜토리얼 보기{% elsif page.uid == 'hub-kr' %}모델 허브 보기{% else %}서비스 보기{% endif %} <span aria-hidden="true">→</span></a>{% endif %}
-    {% if page.repository_url %}<a class="content-button content-button-secondary" href="{{ page.repository_url | escape }}">GitHub에서 참여하기 <span aria-hidden="true">→</span></a>{% endif %}
+    {% if page.website_url %}<a class="content-button" href="{{ page.website_url | escape }}">{% if page.uid == 'tutorials-kr' %}튜토리얼 보기{% elsif page.uid == 'hub-kr' %}모델 허브 보기{% elsif page.uid == 'coresig' %}강의 자료 보기{% elsif page.uid == 'terms-kr' %}용어집 보기{% else %}서비스 보기{% endif %} <span aria-hidden="true">→</span></a>{% endif %}
+    {% if page.repository_url %}<a class="content-button content-button-secondary" href="{{ page.repository_url | escape }}">GitHub 저장소 <span aria-hidden="true">→</span></a>{% endif %}
   </div>
   {% endif %}
   {% if page.programs.size > 0 %}<div class="content-actions">{% for program in page.programs %}<a class="content-button content-button-secondary" href="#{{ program.uid }}">{{ program.title }} 기록 <span aria-hidden="true">↓</span></a>{% endfor %}</div>{% endif %}
@@ -25,7 +25,7 @@ community_page: true
     {% for project in site.projects %}{% if project.group_ids contains page.uid and project.published != false %}{% assign related_count = related_count | plus: 1 %}{% include activity_card.html item=project %}{% endif %}{% endfor %}
   {% endif %}
 {% endcapture %}
-{% if related_count > 0 %}<section class="content-section"><h2>{% if page.collection == 'projects' %}함께하는 모임{% else %}함께 만드는 프로젝트{% endif %}</h2><div class="activity-grid">{{ related_items }}</div></section>{% endif %}
+{% if related_count > 0 %}<section class="content-section"><h2>{% if page.collection == 'projects' %}관련 모임{% else %}관련 프로젝트{% endif %}</h2><div class="activity-grid">{{ related_items }}</div></section>{% endif %}
 {% if page.programs.size > 0 %}
   {% for program in page.programs %}<section id="{{ program.uid }}" class="content-section"><h2>{{ program.title | escape }}</h2>{% include event_list.html group=page.uid program=program.uid %}</section>{% endfor %}
 {% else %}

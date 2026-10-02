@@ -24,9 +24,9 @@ recording: not_recorded
 last_verified_at: '2026-10-02'
 ---
 
-## 경험을 나누는 Community Meetup
+## 행사 개요
 
-AMD Korea가 호스트를 맡아 모델 추론과 서빙의 경험을 공유했습니다. 회차별 공간과 프로그램은 행사 공지를 기준으로 안내합니다.
+AMD Korea가 호스트를 맡아 모델 추론과 서빙의 경험을 공유했습니다.
 
 ## 자료 공개 안내
 
