@@ -1,0 +1,8 @@
+{%- assign event = include.event -%}
+{%- assign today = site.time | date: '%Y-%m-%d' -%}
+{%- case event.event_status -%}
+  {%- when 'cancelled' -%}취소
+  {%- when 'postponed' -%}일정 변경 예정
+  {%- when 'held' -%}행사 기록
+  {%- else -%}{% if event.event_date < today %}지난 일정{% elsif event.event_date == today %}오늘{% else %}예정{% endif %}
+{%- endcase -%}

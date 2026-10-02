@@ -7,7 +7,7 @@ display-news-banner: true
 
 <div class="jumbotron jumbotron-fluid on-dark-background">
   <div class="container">
-    <h1>From<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Research To<br />Production</h1>
+    <h1>From<br /><span class="home-hero-indent">Research To</span><br />Production</h1>
     <p class="lead">프로토타입부터 프로덕션까지 빠르게 만드는 오픈소스 머신러닝 프레임워크</p>
     <a href="{{ site.baseurl }}/get-started" class="btn btn-lg with-right-arrow" data-cta="get-started">
       시작하기
@@ -15,7 +15,7 @@ display-news-banner: true
   </div>
 </div>
 
-<div class="main-content-wrapper">
+<main id="main-content" class="main-content-wrapper">
 
   <!-- Recent Blog Posts Section -->
   <div class="container-fluid recent-blog-section">
@@ -66,7 +66,7 @@ display-news-banner: true
       <div class="row align-items-center mb-3">
         <div class="col">
           <h2>PyTorchKR 커뮤니티 최신 글</h2>
-          <p>AI/ML 분야의 최신 정보를 얻고, 다른 개발자들과 경험과 지식을 나누며 함께 성장하세요!</p>
+          <p>AI/ML 소식, 기술 질문과 답변, 프로젝트 소개를 게시하는 한국어 포럼입니다.</p>
         </div>
         <div class="col-auto">
           <a href="https://discuss.pytorch.kr/" target="_blank" rel="noopener" class="btn btn-lg community-btn" data-cta="community">
@@ -79,6 +79,17 @@ display-news-banner: true
       </div>
     </div>
   </div>
+
+  <section class="content-section community-home container" id="home-projects">
+    <div class="content-section-heading"><h2>프로젝트</h2><a href="{{ '/projects/' | relative_url }}">모든 프로젝트 보기 →</a></div>
+    <div class="activity-grid">{% assign projects = site.projects | where_exp: 'project', 'project.published != false' | sample: 3 %}{% for project in projects %}{% include activity_card.html item=project %}{% endfor %}</div>
+  </section>
+  <section class="content-section community-home content-band" id="home-events">
+    <div class="container">
+      <div class="content-section-heading"><h2>모임·행사</h2><a href="{{ '/events/' | relative_url }}">모든 행사 보기 →</a></div>
+      {% include event_list.html limit=3 %}
+    </div>
+  </section>
 
   <div class="container homepage-feature-module key-features-module">
     <div class="row">
@@ -163,4 +174,4 @@ display-news-banner: true
     </div>
   </div>
 
-</div>
+</main>

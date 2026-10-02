@@ -1,0 +1,16 @@
+---
+layout: general
+community_page: true
+navigation_key: groups
+title: 행사와 발표자료
+summary: 행사 일정과 회차별 발표 영상·자료·후기를 확인할 수 있습니다.
+hero_image: /assets/images/about-background.jpg
+---
+<nav class="content-breadcrumb" aria-label="현재 위치"><a href="{{ '/groups/' | relative_url }}">모임·행사</a><span aria-hidden="true">/</span>행사 기록</nav>
+<div class="content-actions"><a class="content-button content-button-secondary" href="#upcoming">다가오는 행사 ↓</a><a class="content-button content-button-secondary" href="#past">지난 행사 ↓</a></div>
+<section id="upcoming" class="content-section"><h2>다가오는 행사</h2>{% include event_list.html period='upcoming' %}</section>
+{% assign today = site.time | date: '%Y-%m-%d' %}
+{% assign changed_count = 0 %}
+{% for event in site.events %}{% if event.published != false and event.event_date >= today %}{% if event.event_status == 'cancelled' or event.event_status == 'postponed' %}{% assign changed_count = changed_count | plus: 1 %}{% endif %}{% endif %}{% endfor %}
+{% if changed_count > 0 %}<section class="content-section"><h2>취소·일정 변경 안내</h2>{% include event_list.html period='changed' %}</section>{% endif %}
+<section id="past" class="content-section"><h2>지난 행사</h2>{% include event_list.html period='past' %}</section>

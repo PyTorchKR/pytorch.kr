@@ -2,6 +2,7 @@
 <html lang="{{ site.lang }}">
   {% include head.html %}
   <body class="{{ page.body-class }}">
+    {% if page.body-class == 'homepage' %}<a class="skip-link" href="#main-content">본문으로 이동</a>{% endif %}
     {% include tag_manager_script.html %}
     {% include header.html %}
 
