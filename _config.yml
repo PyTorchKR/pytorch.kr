@@ -115,11 +115,11 @@ collections:
 
 defaults:
   - scope: { path: "", type: projects }
-    values: { layout: activity, navigation_key: projects }
+    values: { layout: activity, navigation_key: projects, hero_image: /assets/images/features-background.jpg }
   - scope: { path: "", type: groups }
-    values: { layout: activity, navigation_key: groups }
+    values: { layout: activity, navigation_key: groups, hero_image: /assets/images/about-background.jpg }
   - scope: { path: "", type: events }
-    values: { layout: event, navigation_key: groups }
+    values: { layout: event, navigation_key: groups, hero_image: /assets/images/about-background.jpg }
 
 # Blog Pagination
 pagination:

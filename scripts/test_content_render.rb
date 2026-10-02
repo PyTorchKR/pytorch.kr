@@ -27,7 +27,7 @@ Dir.mktmpdir('pytorchkr-render-') do |dir|
   FileUtils.cp(File.join(root, 'events/index.html'), File.join(dir, 'events'))
   config = { 'source' => dir, 'destination' => File.join(dir, '_site'), 'baseurl' => '/preview', 'timezone' => 'Asia/Seoul',
     'collections' => %w[events projects groups features].to_h { |name| [name, { 'output' => true, 'permalink' => "/#{name}/:path/" }] },
-    'defaults' => [{ 'scope' => { 'path' => '', 'type' => 'events' }, 'values' => { 'layout' => 'event' } }] }
+    'defaults' => YAML.safe_load(File.read(File.join(root, '_config.yml')))['defaults'] }
   session = { 'uid' => 'talk', 'title' => 'Public talk', 'video' => { 'state' => 'public', 'youtube_id' => 'aV2lNdf1UHc', 'start_seconds' => 90 }, 'slides' => { 'state' => 'public', 'url' => 'https://example.org/slides.pdf', 'size_bytes' => 10485760, 'format' => 'pdf' } }
   write = lambda do |uid, extra|
     data = { 'uid' => uid, 'title' => uid, 'summary' => 'Fixture', 'event_date' => '2099-10-14', 'event_status' => 'scheduled', 'last_verified_at' => '2026-10-02' }.merge(extra)
@@ -49,7 +49,14 @@ Dir.mktmpdir('pytorchkr-render-') do |dir|
   future = read.call('future')
   assert.call(future.include?('참가 신청하기') && future.include?('data-registration-closes'), 'future registration absent')
   assert.call(future.include?('watch?v=aV2lNdf1UHc&amp;t=90s') && future.include?('slides.pdf') && future.include?('10.0 MB'), 'media pairing missing')
-  assert.call(!future.include?('<iframe'), 'player loaded before interaction')
+  assert.call(future.include?('<iframe src="https://www.youtube-nocookie.com/embed/aV2lNdf1UHc?start=90"') && future.include?('loading="lazy"'), 'inline lazy player or start time missing')
+  assert.call(!future.include?('<details') && !future.include?('autoplay='), 'player must be visible without autoplay')
+  assert.call(future.include?('title="발표 영상: Public talk"'), 'player accessible title missing')
+  %w[no-media private limited].each { |uid| assert.call(!read.call(uid).include?('<iframe'), "#{uid}: unavailable video embedded") }
+  %w[events/future projects/projects-0 groups/groups-0].each do |name|
+    detail = File.read(File.join(dir, "_site/#{name}/index.html"))
+    assert.call(detail.scan('<h1>').size == 1 && detail.include?('class="section-hero-image" src="/preview/assets/'), "#{name}: detail hero missing or heading duplicated")
+  end
   assert.call(future.include?('href="/preview/events/"'), 'baseurl not honored')
   %w[cancelled past-unconfirmed not-open early-closed].each { |uid| assert.call(!read.call(uid).include?('참가 신청하기'), "#{uid}: invalid signup CTA") }
   assert.call(read.call('past-unconfirmed').include?('지난 일정'), 'past date inferred as held')

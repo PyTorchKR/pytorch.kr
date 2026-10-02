@@ -11,10 +11,11 @@
     {% if session.code_url %}<a class="content-button content-button-secondary" href="{{ session.code_url | escape }}">코드 보기 →</a>{% endif %}
   </div>
   {% if session.video.state == 'public' %}
-  <details class="session-player" data-youtube-id="{{ session.video.youtube_id | escape }}" data-start="{{ session.video.start_seconds | default: 0 }}">
-    <summary>이 페이지에서 영상 보기 <span class="visually-hidden">{{ session.title | escape }}</span></summary>
-    <div class="video-container" data-video-title="{{ session.title | escape }}"><p>플레이어를 불러오지 못하면 위 YouTube 링크에서 볼 수 있습니다.</p></div>
-  </details>
+  <div class="session-player">
+    <div class="video-container">
+      <iframe src="https://www.youtube-nocookie.com/embed/{{ session.video.youtube_id | escape }}?start={{ session.video.start_seconds | default: 0 }}" title="발표 영상: {{ session.title | escape }}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+  </div>
   {% elsif session.video.state == 'not_recorded' %}<p class="event-note">녹화하지 않은 발표입니다.</p>
   {% elsif session.video.state == 'private' %}<p class="event-note">발표 영상은 비공개입니다.</p>
   {% elsif session.video.state == 'limited' %}<p class="event-note">{{ session.video.note | default: '영상 제공이 제한됩니다.' | escape }}</p>

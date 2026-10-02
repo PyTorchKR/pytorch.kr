@@ -1,6 +1,6 @@
 ---
 uid: pytorchkr-conference-2025
-title: 다섯 번째 PyTorchKR 기술 세미나
+title: 'PyTorchKR 기술 세미나: 5회'
 summary: PyTorch와 오픈소스 AI의 연구·개발 경험을 공유한 기술 세미나입니다.
 event_date: '2025-11-22'
 event_status: held

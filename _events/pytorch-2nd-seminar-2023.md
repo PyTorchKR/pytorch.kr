@@ -1,6 +1,6 @@
 ---
 uid: pytorch-2nd-seminar-2023
-title: 'Whisper : OpenAI의 All-in-one 음성 인식'
+title: 'PyTorchKR 기술 세미나: 2회'
 summary: ChatGPT와 추천 시스템, 딥러닝 협업, 모바일 모델과 음성 인식 경험을 공유했습니다.
 event_date: '2023-03-18'
 event_status: held

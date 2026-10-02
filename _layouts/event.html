@@ -5,8 +5,6 @@ community_page: true
 <nav class="content-breadcrumb" aria-label="현재 위치"><a href="{{ '/' | relative_url }}">홈</a><span aria-hidden="true">/</span><a href="{{ '/groups/' | relative_url }}">모임·행사</a><span aria-hidden="true">/</span><a href="{{ '/events/' | relative_url }}">행사 기록</a></nav>
 <header class="content-heading">
   <p class="content-eyebrow">{% include event_status.html event=page %}</p>
-  <h1>{{ page.title | escape }}</h1>
-  <p class="content-lead">{{ page.summary | escape }}</p>
   <dl class="event-facts">
     <div><dt>일시</dt><dd><time datetime="{{ page.event_date }}">{{ page.event_date | date: '%Y년 %m월 %d일' }}</time>{% if page.starts_at %} {{ page.starts_at | date: '%H:%M' }}{% if page.ends_at %}–{{ page.ends_at | date: '%H:%M' }}{% endif %} (한국 시간){% endif %}</dd></div>
     {% if page.venue %}<div><dt>장소</dt><dd>{{ page.venue | escape }}</dd></div>{% endif %}

@@ -34,3 +34,7 @@
 - [제5회 기술 세미나 모집 안내](https://event-us.kr/pytorchkr/event/116780)
 
 최초 이관에 포함한 프로젝트·모임과 최근 행사 출처는 [개편 계획](homepage-renewal-plan-2026-10-02.md)에 정리되어 있으며, 각 공개 Markdown 파일에도 `sources`를 유지합니다.
+
+## 행사명 재검토
+
+1~3회 데이터의 행사명에 각각 마지막 세션 제목이 들어간 오류를 수정했습니다. `End To End 음성인식`, `Whisper : OpenAI의 All-in-one 음성 인식`, `LLM 성능의 정점에 선 MoA (Mixture-of-Agents) Flowise로 3분 만에 구현하기`는 개별 발표 제목으로 유지합니다. 1~5회 행사명은 `PyTorchKR 기술 세미나: N회` 형식으로 통일했습니다. 세션 제목·발표자·영상 ID와 기존 행사 URL은 변경하지 않았습니다.

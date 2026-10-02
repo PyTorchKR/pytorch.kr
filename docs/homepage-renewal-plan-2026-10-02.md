@@ -103,7 +103,7 @@
 
 프로젝트와 모임의 하위 메뉴는 컬렉션에서 자동 생성합니다. CoreSIG는 강의 정리 프로젝트로 분류하며 현재 강의 사이트를 연결하고 PyTorchKR 제공 계획은 준비 중으로 안내합니다.
 
-목록 페이지에는 기존 사진을 사용한 흑백 Hero를 둡니다. 프로젝트는 기존 한국 건축 사진, 모임·행사는 기존 협업 사진을 재사용합니다. 설명은 실제 주제와 제공 내용을 짧게 적고, 개별 상세 페이지에는 사진 Hero를 반복하지 않습니다.
+목록과 상세 페이지에 기존 사진을 사용한 흑백 Hero를 둡니다. 프로젝트는 기존 한국 건축 사진, 모임·행사는 기존 협업 사진을 재사용합니다. 설명은 실제 주제와 제공 내용을 짧게 적고, 상세 페이지의 제목과 요약도 Hero에 한 번만 표시합니다.
 
 - 프로젝트: ‘PyTorch 한국어 문서, AI/ML 용어집, 오픈소스 탐색 도구를 개발합니다.’
 - 모임·행사: ‘LLM 추론과 Physical AI를 다루는 모임, PyTorchKR 기술 세미나와 컨퍼런스입니다.’
@@ -400,7 +400,7 @@ related_links:
 
 vLLM.KR Community Meetup처럼 발표·Q&A를 비공개로 진행하는 회차는 그 원칙을 따릅니다. 공개 동의를 받은 슬라이드만 연결하고, 영상 공개를 기본 전제로 삼지 않습니다. [8월 운영 안내](https://event-us.kr/pytorchkr/event/132012), [녹화하지 않는다는 연사 모집 공지](https://discuss.pytorch.kr/t/11373)
 
-권장 구현은 영상 버튼을 눌렀을 때 플레이어를 로드하는 방식입니다. 발표가 많아도 페이지 진입 시 여러 YouTube iframe을 동시에 띄우지 않습니다. 영상별 `youtube_id`, 필요 시 `start_seconds`만 입력하면 템플릿이 URL을 생성합니다. 통합 녹화본의 발표별 시작 위치와 행사 전체 재생목록 링크도 지원할 수 있습니다. 단순 임베드에는 YouTube Data API가 필요하지 않습니다. [YouTube 임베드·시작 시각·재생목록](https://developers.google.com/youtube/player_parameters)
+발표별 본문에 YouTube 플레이어를 직접 삽입합니다. 별도 펼치기 버튼 없이 재생할 수 있고, `loading="lazy"`를 사용해 화면에 가까운 플레이어부터 로드합니다. 자동 재생하지 않습니다. 영상별 `youtube_id`, 필요 시 `start_seconds`만 입력하면 템플릿이 URL을 생성합니다. 통합 녹화본의 발표별 시작 위치와 행사 전체 재생목록 링크도 지원할 수 있습니다. 단순 임베드에는 YouTube Data API가 필요하지 않습니다. [YouTube 임베드·시작 시각·재생목록](https://developers.google.com/youtube/player_parameters)
 
 자동 재생은 사용하지 않고, 자막·전체 화면 조작과 `YouTube에서 보기` 링크를 제공합니다. `youtube-nocookie.com`의 개인정보 보호 강화 모드를 사용할 수 있지만 추적이 전혀 없다는 의미로 설명하지 않습니다. [YouTube 공식 도움말](https://support.google.com/youtube/answer/171780?hl=en)
 

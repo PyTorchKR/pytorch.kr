@@ -4,10 +4,8 @@ community_page: true
 ---
 {% if page.collection == 'projects' %}{% assign listing = '/projects/' %}{% assign listing_title = '프로젝트' %}{% else %}{% assign listing = '/groups/' %}{% assign listing_title = '모임·행사' %}{% endif %}
 <nav class="content-breadcrumb" aria-label="현재 위치"><a href="{{ '/' | relative_url }}">홈</a><span aria-hidden="true">/</span><a href="{{ listing | relative_url }}">{{ listing_title }}</a></nav>
-<header class="content-heading">
-  <p class="content-eyebrow">{{ page.kind | escape }}</p>
-  <h1>{{ page.title | escape }}</h1>
-  <p class="content-lead">{{ page.summary | escape }}</p>
+{% if page.website_url or page.repository_url or page.programs.size > 0 %}
+<div class="content-heading">
   {% if page.website_url or page.repository_url %}
   <div class="content-actions">
     {% if page.website_url %}<a class="content-button" href="{{ page.website_url | escape }}">{% if page.uid == 'tutorials-kr' %}튜토리얼 보기{% elsif page.uid == 'hub-kr' %}모델 허브 보기{% elsif page.uid == 'coresig' %}강의 자료 보기{% elsif page.uid == 'terms-kr' %}용어집 보기{% else %}서비스 보기{% endif %} <span aria-hidden="true">→</span></a>{% endif %}
@@ -15,7 +13,8 @@ community_page: true
   </div>
   {% endif %}
   {% if page.programs.size > 0 %}<div class="content-actions">{% for program in page.programs %}<a class="content-button content-button-secondary" href="#{{ program.uid }}">{{ program.title }} 기록 <span aria-hidden="true">↓</span></a>{% endfor %}</div>{% endif %}
-</header>
+</div>
+{% endif %}
 <div class="content-prose">{{ content }}</div>
 {% assign related_count = 0 %}
 {% capture related_items %}

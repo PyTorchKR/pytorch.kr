@@ -1,6 +1,6 @@
 ---
 uid: pytorch-4th-seminar-2024
-title: 네 번째 PyTorchKR 기술 세미나
+title: 'PyTorchKR 기술 세미나: 4회'
 summary: PyTorch 재단, AI 백엔드, 컴퓨터 비전, 멀티모달 모델과 글로벌 컨퍼런스 경험을 나누었습니다.
 event_date: '2024-11-30'
 event_status: held

@@ -1,6 +1,6 @@
 ---
 uid: pytorch-3rd-seminar-2024
-title: LLM 성능의 정점에 선 MoA (Mixture-of-Agents) Flowise로 3분 만에 구현하기
+title: 'PyTorchKR 기술 세미나: 3회'
 summary: 멀티모달 모델, 이미지 생성, AI 투자와 퀀트, Mixture-of-Agents를 함께 살펴보았습니다.
 event_date: '2024-07-20'
 event_status: held

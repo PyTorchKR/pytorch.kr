@@ -1,6 +1,6 @@
 ---
 uid: pytorch-1st-seminar-2022
-title: End To End 음성인식
+title: 'PyTorchKR 기술 세미나: 1회'
 summary: 오픈소스 기여 경험부터 모바일 PyTorch, 음성 인식까지 함께 나눈 첫 오프라인 기술 세미나입니다.
 event_date: '2022-10-29'
 event_status: held
