@@ -14,7 +14,7 @@ org_link: https://pytorch.org/blog/building-a-high-performance-and-portable-vllm
 [Helion](https://helionlang.com/index.html)을 vLLM의 [선형 백엔드(linear backend)](https://docs.vllm.ai/en/latest/api/vllm/model_executor/kernels/linear/)에 통합했습니다. 자동 튜닝(autotuning)되는 고수준 커널 DSL이 커널 구현의 복잡도를 줄이면서 LLM 추론 성능을 얼마나 높일 수 있는지 살펴보기 위해서입니다. Helion으로 작성한 일반 행렬 곱셈(GEMM, general matrix multiplication) 구현 하나가 Standard GEMM, Split-K, Swap-AB 같은 여러 알고리즘 변형을 모두 다룰 수 있습니다. 가장 좋은 변형과 구성(config)은 입력 형태(shape)별 자동 튜닝으로 자동 선택됩니다.
 > We integrated [Helion](https://helionlang.com/index.html) into vLLM’s [linear backend](https://docs.vllm.ai/en/latest/api/vllm/model_executor/kernels/linear/) to explore how an autotuned, high-level kernel DSL can improve LLM inference performance while reducing kernel implementation complexity. A single Helion general matrix multiplication (GEMM) implementation can cover multiple algorithmic variants, including Standard GEMM, Split-K, and Swap-AB, with the best variant and config automatically selected through per-shape autotuning.
 
-NVIDIA Hopper GPU에서 Helion 선형 백엔드는 형태별 튜닝과 하이브리드 디스패치(hybrid dispatch)를 결합해, 평가한 모든 모델에서 vLLM 기본 백엔드인 CUTLASS와 DeepGEMM보다 좋은 성능을 냈습니다. 엔드투엔드(end-to-end) 성능이 일관되게 향상되었고, 일부 워크로드에서는 처리량(throughput)이 10% 넘게 개선되었습니다.
+NVIDIA Hopper GPU에서 Helion 선형 백엔드는 형태별 튜닝과 하이브리드 디스패치(hybrid dispatch)를 결합해, 평가한 모델 전반에서 vLLM 기본 백엔드인 CUTLASS와 DeepGEMM보다 좋은 성능을 냈습니다. 엔드투엔드(end-to-end) 성능이 일관되게 향상되었고, 일부 워크로드에서는 처리량(throughput)이 10% 넘게 개선되었습니다.
 > On NVIDIA Hopper GPUs, the Helion linear backend combines per-shape tuning with hybrid dispatch to outperform the vLLM default CUTLASS and DeepGEMM backends across the evaluated models, delivering consistent end-to-end performance gains and more than 10% throughput improvement for some workloads.
 
 ## vLLM과 Helion에 대한 간략한 배경 / Brief Background on vLLM and Helion
@@ -32,7 +32,7 @@ NVIDIA Hopper GPU에서 Helion 선형 백엔드는 형태별 튜닝과 하이브
 
 ### 기회 / Opportunities
 
-**성능(Performance)**: [이전 작업](https://pytorch.kr/blog/2026/portable-vllm-model-inference-kernels-in-helion/)에서, Helion이 세밀한(fine-grained) 튜닝으로 다양한 워크로드 패턴과 하드웨어 플랫폼에 걸쳐 추론 커널의 최고 수준(SOTA) 성능을 달성할 잠재력이 있음을 보였습니다.
+**성능(Performance)**: [이전 작업](https://pytorch.kr/blog/2026/portable-vllm-model-inference-kernels-in-helion/)에서는 Helion이 세밀한(fine-grained) 튜닝으로 다양한 워크로드 패턴과 하드웨어 플랫폼에 걸쳐 추론 커널의 최고 수준(SOTA) 성능을 달성할 잠재력이 있음을 보였습니다.
 > **Performance**: Our [previous work](https://pytorch.org/blog/portable-vllm-model-inference-kernels-in-helion/) demonstrated Helion’s potential to achieve SOTA performance for inference kernels across diverse workload patterns and hardware platforms through fine-grained tuning.
 
 **체계적인 튜닝 프레임워크(Systematic Tuning Framework)**: 커널 구현을 반복해서 생성하고, 프로파일링하고, 다듬는 열린 형태의 에이전트(agentic) 방식과 달리, Helion은 커널 튜닝을 잘 정의된 탐색 공간 위의 구조화된 수치 최적화 문제로 정식화합니다. 그래서 튜닝 과정이 더 견고하고 믿을 만해집니다. 탐색을 이끄는 데 프로파일링에 의존하지 않으면서도 튜닝 효율에서는 경쟁력을 유지합니다. 또한 Helion은 LLM 기반 탐색을 지원해, LLM의 추론 능력과 체계적인 수치 최적화를 결합하여 탐색 공간을 효율적으로 탐색합니다.
@@ -360,12 +360,12 @@ vllm bench serve \
 전반적으로 Helion 선형 백엔드는 평가한 모델과 양자화 형식 전반에서 엔드투엔드 성능을 일관되게 높였고, 일부 워크로드에서는 처리량이 10% 넘게 개선되었습니다.
 > Overall, the Helion linear backend delivers consistent end-to-end performance gains across the evaluated models and quantization formats, with more than 10% throughput improvement for some workloads.
 
-## 실용적인 도입 모델을 향하여 / Toward a Practical Adoption Model
+## 실용적인 도입 방식을 향하여 / Toward a Practical Adoption Model
 
 이번 글에서 소개한 Helion 선형 백엔드는 현재 [vLLM 포크(fork)](https://github.com/redhat-et/vllm-helion)에서 사용할 수 있으며, 프로덕션에 쓸 수 있는 상태입니다. 이 포크에는 최종 사용자가 다른 모델과 워크로드에 맞는 최적화된 구성을 생성하는 데 필요한 자동 튜닝 도구와 안내도 들어 있습니다. 업스트림 도입에 남은 과제 하나는 미리 튜닝한 대량의 구성을 배포하고 검증하는 유지 관리 오버헤드입니다.
 > The Helion linear backend presented in this work is currently available in our [vLLM fork](https://github.com/redhat-et/vllm-helion) and ready for production use. The fork also includes the autotuning tooling and instructions needed for end users to generate optimized configs for additional models and workloads. One remaining challenge for upstream adoption is the maintenance overhead of shipping and validating a large collection of pre-tuned configs.
 
-이번 작업에서 다룬 GEMM 커널처럼 지연 시간에 민감한 커널에 대해서는 다음과 같은 모델을 검토하고 있습니다. Helion 커널과 통합 프레임워크는 기능 테스트와 CI용 기본 구성과 함께 업스트림에서 유지 관리하고, 워크로드별 자동 튜닝은 최종 사용자에게 맡기는 방식입니다. 사용자는 이번 작업에서 쓴 것과 같은 자동화 도구로, 배포 전에 대상 모델과 하드웨어에 맞는 최적화된 구성을 생성할 수 있습니다. 이 모델은 바로 쓸 수 있는(out-of-the-box) 사용성보다 성능과 유지 관리성을 우선합니다. 지연 시간에 민감한 커널에서는 성능 이점이 추가적인 오프라인 최적화 노력을 정당화할 수 있으므로, 이 트레이드오프가 현실적이라고 생각합니다. 프로덕션 배포 전에 이런 투자를 할 의향이 있는 모델 서빙 제공자에게는 특히 그렇습니다.
+이번 작업에서 다룬 GEMM 커널처럼 지연 시간에 민감한 커널에 대해서는 다음과 같은 운영 방식을 검토하고 있습니다. Helion 커널과 통합 프레임워크는 기능 테스트와 CI용 기본 구성과 함께 업스트림에서 유지 관리하고, 워크로드별 자동 튜닝은 최종 사용자에게 맡기는 방식입니다. 사용자는 이번 작업에서 쓴 것과 같은 자동화 도구로, 배포 전에 대상 모델과 하드웨어에 맞는 최적화된 구성을 생성할 수 있습니다. 이 방식은 바로 쓸 수 있는(out-of-the-box) 사용성보다 성능과 유지 관리성을 우선합니다. 지연 시간에 민감한 커널에서는 성능 이점이 추가적인 오프라인 최적화 노력을 정당화할 수 있으므로, 이 트레이드오프가 현실적이라고 생각합니다. 프로덕션 배포 전에 이런 투자를 할 의향이 있는 모델 서빙 제공자에게는 특히 그렇습니다.
 > For latency-critical kernels such as the GEMM kernels studied in this work, we are exploring a model in which the Helion kernels and integration framework are maintained upstream with a default config for functional testing and CI, while workload-specific autotuning is delegated to end users. The same automated tooling used in this work allows users to generate optimized configs for their target models and hardware before deployment. This model favors performance and maintainability over out-of-the-box usability. We believe this tradeoff is practical for latency-critical kernels, where the performance benefits can justify the additional offline optimization effort, particularly for model serving providers willing to make this investment before production deployment.
 
 하지만 세밀한 튜닝만이 Helion 커널을 도입하는 유일한 실용적 전략은 아닙니다. 양자화, 활성화, 정규화 커널처럼 더 작은 보조 커널에서는 최고 성능을 어느 정도 포기하는 대신, 여러 형태에 일반화되는 훨씬 작은 구성 집합을 쓰는 편이 나을 수 있습니다. [초기 실험](https://github.com/vllm-project/vllm/issues/53788)에서는 구성을 6개만 써도 이런 커널에서 의미 있는 성능 향상을 얻을 수 있었습니다. 이는 보조 커널에 대해 튜닝과 유지 관리 오버헤드가 훨씬 낮은, 업스트림 도입의 또 다른 경로가 됩니다.
@@ -387,13 +387,13 @@ vllm bench serve \
 
 ## 결론 / Conclusion
 
-Helion의 고수준 추상화 덕분에 커널 구현 하나를 작성하고 유지 관리하면서, 서로 다른 워크로드와 하드웨어 타깃에 맞게 최적화할 수 있습니다. 이번 작업의 양자화 GEMM 커널이 보여 주듯, Standard GEMM, Split-K, Swap-AB 같은 알고리즘 변형조차 하나의 구현으로 통합해 자동 튜너가 고를 수 있는 튜닝 선택지로 노출할 수 있습니다. 형태별 세밀한 커널 튜닝과 하이브리드 디스패치를 결합한 Helion 선형 백엔드는, 평가한 모든 모델에서 Hopper GPU의 기본 백엔드인 CUTLASS, DeepGEMM, FlashInfer보다 좋은 성능을 냈습니다. 엔드투엔드 성능이 일관되게 향상되었고, 일부 워크로드에서는 처리량이 10% 넘게 개선되었습니다.
+Helion의 고수준 추상화 덕분에 커널 구현 하나를 작성하고 유지 관리하면서, 서로 다른 워크로드와 하드웨어 타깃에 맞게 최적화할 수 있습니다. 이번 작업의 양자화 GEMM 커널이 보여 주듯, Standard GEMM, Split-K, Swap-AB 같은 알고리즘 변형조차 하나의 구현으로 통합해 자동 튜너가 고를 수 있는 튜닝 선택지로 노출할 수 있습니다. 형태별 세밀한 커널 튜닝과 하이브리드 디스패치를 결합한 Helion 선형 백엔드는, 평가한 모델 전반에서 Hopper GPU의 기본 백엔드인 CUTLASS, DeepGEMM, FlashInfer보다 좋은 성능을 냈습니다. 엔드투엔드 성능이 일관되게 향상되었고, 일부 워크로드에서는 처리량이 10% 넘게 개선되었습니다.
 > Helion’s high-level abstraction makes it possible to express and maintain a single kernel implementation while optimizing it across different workloads and hardware targets. As demonstrated by the quantized GEMM kernels in this work, even algorithmic variants such as Standard GEMM, Split-K, and Swap-AB can be unified into one implementation and exposed as tunable choices for the autotuner. Combined with per-shape fine-grained kernel tuning and hybrid dispatch, the Helion linear backend outperforms the default CUTLASS, DeepGEMM, and FlashInfer backends on Hopper GPUs across the evaluated models, delivering consistent end-to-end performance gains and throughput improvements exceeding 10% for some workloads.
 
 하지만 이런 성능 향상에는 트레이드오프가 따릅니다. 지연 시간에 민감한 커널을 세밀하게 튜닝하면 성능은 좋아지지만 AOT 튜닝 노력이 늘어납니다. 미리 튜닝한 구성을 함께 배포하면 바로 쓸 수 있는 사용성은 좋아지지만 지속적인 유지 관리 비용이 듭니다. 이는 이번 글 전체에서 다룬 성능-사용성-유지 관리성 트레이드오프를 반영합니다.
 > These performance gains, however, come with tradeoffs. Fine-grained tuning for latency-critical kernels improves performance but increases AOT tuning effort, while shipping pre-tuned configs improves out-of-the-box usability at the cost of ongoing maintenance. This reflects the broader performance-usability-maintainability tradeoff discussed throughout this post.
 
-현재는 [vLLM 포크](https://github.com/redhat-et/vllm-helion)에 미리 튜닝한 구성을 함께 배포하고 있습니다. 업스트림 도입을 위해서는 다른 모델을 검토하고 있습니다. Helion 커널과 통합 프레임워크는 업스트림에서 유지 관리하고, 워크로드별 자동 튜닝은 최종 사용자에게 맡기는 방식입니다. 이 방식은 바로 쓸 수 있는 사용성보다 성능과 유지 관리성을 우선하지만, Helion의 자동화된 튜닝 프레임워크 덕분에 성능에 민감한 배포에서는 추가 최적화 단계가 현실적인 선택이 됩니다.
+현재는 [vLLM 포크](https://github.com/redhat-et/vllm-helion)에 미리 튜닝한 구성을 함께 배포하고 있습니다. 업스트림 도입을 위해서는 다른 방식을 검토하고 있습니다. Helion 커널과 통합 프레임워크는 업스트림에서 유지 관리하고, 워크로드별 자동 튜닝은 최종 사용자에게 맡기는 방식입니다. 이 방식은 바로 쓸 수 있는 사용성보다 성능과 유지 관리성을 우선하지만, Helion의 자동화된 튜닝 프레임워크 덕분에 성능에 민감한 배포에서는 추가 최적화 단계가 현실적인 선택이 됩니다.
 > Today, we ship the pre-tuned configs with our [vLLM fork](https://github.com/redhat-et/vllm-helion). For upstream adoption, we are exploring a different model: maintain the Helion kernels and integration framework upstream while delegating workload-specific autotuning to end users. This favors performance and maintainability over out-of-the-box usability, but Helion’s automated tuning framework makes the additional optimization step practical for performance-sensitive deployments.
 
 ## 감사의 글 / Acknowledgments
