@@ -1,39 +1,18 @@
-<div class="main-menu">
+<nav class="main-menu" aria-label="주 메뉴">
   <ul>
     {% for item in site.data.navigation.main_menu %}
-      <li class="main-menu-item {% if item.key and (current[1] == item.key or (item.key == 'blog' and page.url contains '/blog')) %}active{% endif %}{% if item.has_dropdown %} {{ item.key }}-dropdown{% endif %}">
+      <li class="main-menu-item{% if active_navigation == item.key %} active{% endif %}{% if item.has_dropdown %} {{ item.key }}-dropdown{% endif %}">
         {% if item.has_dropdown %}
-          <a href="#" class="{% if item.key and current[1] == item.key %}with-down-orange-arrow{% else %}with-down-arrow{% endif %}">{{ item.title }}</a>
-          <div class="{{ item.key }}-dropdown-menu dropdown-menu">
-            {% for dropdown_item in item.dropdown_items %}
-              {% if dropdown_item.url_type == "baseurl" %}
-                {% assign final_url = site.baseurl | append: dropdown_item.url %}
-              {% else %}
-                {% assign final_url = dropdown_item.url %}
-              {% endif %}
-              <a href="{{ final_url }}" class="nav-dropdown-item"{% if dropdown_item.target %} target="{{ dropdown_item.target }}"{% endif %}>
-                <div class="dropdown-title">
-                  {{ dropdown_item.title }}
-                  {% if dropdown_item.external %}
-                    <i class="fa fa-external-link" style="margin-left: 6px; font-size: 10px;"></i>
-                  {% endif %}
-                </div>
-              </a>
-            {% endfor %}
+          <button type="button" class="nav-toggle with-down-arrow" aria-expanded="false" aria-controls="desktop-menu-{{ item.key }}" data-nav-toggle>{{ item.title }}</button>
+          <div id="desktop-menu-{{ item.key }}" class="{{ item.key }}-dropdown-menu dropdown-menu" hidden>
+            {% include dropdown_links.html item=item %}
           </div>
         {% else %}
-          {% if item.url_type == "baseurl" %}
-            {% assign final_url = site.baseurl | append: item.url %}
-          {% elsif item.url_type == "external_urls" %}
-            {% assign final_url = site.external_urls[item.url_key] %}
-          {% else %}
-            {% assign final_url = item.url %}
-          {% endif %}
-          <a href="{{ final_url }}"{% if item.target %} target="{{ item.target }}"{% endif %}>{{ item.title }}</a>
+          {% if item.url_type == 'baseurl' %}{% assign final_url = item.url | relative_url %}{% elsif item.url_type == 'external_urls' %}{% assign final_url = site.external_urls[item.url_key] %}{% else %}{% assign final_url = item.url %}{% endif %}
+          <a href="{{ final_url }}"{% if active_navigation == item.key %} aria-current="true"{% endif %}{% if item.target %} target="{{ item.target }}" rel="noopener"{% endif %}>{{ item.title }}</a>
         {% endif %}
       </li>
     {% endfor %}
   </ul>
-</div>
-
-<script src="{{ site.baseurl }}/assets/main-menu-dropdown.js"></script>
+</nav>
+<script src="{{ '/assets/main-menu-dropdown.js' | relative_url }}" defer></script>

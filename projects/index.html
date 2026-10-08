@@ -1,0 +1,9 @@
+---
+layout: general
+community_page: true
+navigation_key: projects
+title: 프로젝트
+summary: PyTorch 한국어 문서, AI/ML 용어집, 오픈소스 탐색 도구를 개발합니다.
+hero_image: /assets/images/features-background.jpg
+---
+<div class="activity-grid">{% assign projects = site.projects | sort: 'order' %}{% for project in projects %}{% unless project.published == false %}{% include activity_card.html item=project %}{% endunless %}{% endfor %}</div>

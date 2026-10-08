@@ -1,0 +1,8 @@
+<header class="section-hero{% if page.collection %} section-hero-detail{% endif %}">
+  <img class="section-hero-image" src="{{ page.hero_image | relative_url }}" alt="" fetchpriority="high">
+  <div class="container">
+    {% if page.kind %}<p class="section-hero-kind">{{ page.kind | escape }}</p>{% endif %}
+    <h1>{{ page.title | escape }}</h1>
+    <p>{{ page.summary | escape }}</p>
+  </div>
+</header>

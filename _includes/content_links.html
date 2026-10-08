@@ -1,0 +1,8 @@
+{% if include.links.size > 0 %}
+<ul class="content-links">
+  {% for link in include.links %}
+  {% assign first_character = link.url | slice: 0 %}
+  <li><a href="{% if first_character == '/' %}{{ link.url | relative_url }}{% else %}{{ link.url | escape }}{% endif %}">{{ link.title | escape }} <span aria-hidden="true">→</span></a></li>
+  {% endfor %}
+</ul>
+{% endif %}

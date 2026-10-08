@@ -6,8 +6,8 @@
 {%- comment -%} 제목: page.title → site.title {%- endcomment -%}
 {%- assign og_title = page.title | default: site.title -%}
 
-{%- comment -%} 설명: page.description → (블로그 글) 본문 발췌 → site.description {%- endcomment -%}
-{%- assign og_description = page.description -%}
+{%- comment -%} 설명: page.description → page.summary → (블로그 글) 본문 발췌 → site.description {%- endcomment -%}
+{%- assign og_description = page.description | default: page.summary -%}
 {%- if og_description == nil or og_description == '' -%}
   {%- if page.layout == 'blog_detail' -%}
     {%- assign og_description = page.content -%}

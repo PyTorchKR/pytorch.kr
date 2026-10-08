@@ -1,0 +1,34 @@
+---
+layout: general
+community_page: true
+---
+{% if page.collection == 'projects' %}{% assign listing = '/projects/' %}{% assign listing_title = '프로젝트' %}{% else %}{% assign listing = '/groups/' %}{% assign listing_title = '모임·행사' %}{% endif %}
+<nav class="content-breadcrumb" aria-label="현재 위치"><a href="{{ '/' | relative_url }}">홈</a><span aria-hidden="true">/</span><a href="{{ listing | relative_url }}">{{ listing_title }}</a></nav>
+{% if page.website_url or page.repository_url or page.programs.size > 0 %}
+<div class="content-heading">
+  {% if page.website_url or page.repository_url %}
+  <div class="content-actions">
+    {% if page.website_url %}<a class="content-button" href="{{ page.website_url | escape }}">{{ page.website_label | default: '사이트 보기' | escape }} <span aria-hidden="true">→</span></a>{% endif %}
+    {% if page.repository_url %}<a class="content-button content-button-secondary" href="{{ page.repository_url | escape }}">GitHub 저장소 <span aria-hidden="true">→</span></a>{% endif %}
+  </div>
+  {% endif %}
+  {% if page.programs.size > 0 %}<div class="content-actions">{% for program in page.programs %}<a class="content-button content-button-secondary" href="#{{ program.uid }}">{{ program.title }} 기록 <span aria-hidden="true">↓</span></a>{% endfor %}</div>{% endif %}
+</div>
+{% endif %}
+<div class="content-prose">{{ content }}</div>
+{% assign related_count = 0 %}
+{% capture related_items %}
+  {% if page.collection == 'projects' %}
+    {% for group in site.groups %}{% if page.group_ids contains group.uid and group.published != false %}{% assign related_count = related_count | plus: 1 %}{% include activity_card.html item=group %}{% endif %}{% endfor %}
+  {% else %}
+    {% for project in site.projects %}{% if project.group_ids contains page.uid and project.published != false %}{% assign related_count = related_count | plus: 1 %}{% include activity_card.html item=project %}{% endif %}{% endfor %}
+  {% endif %}
+{% endcapture %}
+{% if related_count > 0 %}<section class="content-section"><h2>{% if page.collection == 'projects' %}관련 모임{% else %}관련 프로젝트{% endif %}</h2><div class="activity-grid">{{ related_items }}</div></section>{% endif %}
+{% if page.programs.size > 0 %}
+  {% for program in page.programs %}<section id="{{ program.uid }}" class="content-section"><h2>{{ program.title | escape }}</h2>{% include event_list.html group=page.uid program=program.uid %}</section>{% endfor %}
+{% else %}
+  {% capture related_events %}{% if page.collection == 'projects' %}{% include event_list.html project=page.uid %}{% else %}{% include event_list.html group=page.uid %}{% endif %}{% endcapture %}
+  {% if related_events contains 'event-row' %}<section class="content-section"><div class="content-section-heading"><h2>관련 행사</h2><a href="{{ '/events/' | relative_url }}">모든 행사 보기 →</a></div>{{ related_events }}</section>{% endif %}
+{% endif %}
+{% if page.related_links.size > 0 %}<section class="content-section"><h2>관련 글과 자료</h2>{% include content_links.html links=page.related_links %}</section>{% endif %}
