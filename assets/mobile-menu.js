@@ -2,6 +2,7 @@ var mobileMenu = {
   bind: function () {
     var dialog = document.getElementById('mobile-navigation');
     var opener = document.querySelector('[data-behavior="open-mobile-menu"]');
+    if (!dialog || !opener) return;
     var closer = dialog.querySelector('[data-behavior="close-mobile-menu"]');
     var inertElements = [];
     function close() {

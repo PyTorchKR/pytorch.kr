@@ -4,6 +4,7 @@ title: CoreSIG
 summary: PyTorch 내부 구조와 AI 가속기 연동 강의 내용을 정리하는 프로젝트입니다.
 kind: 강의 정리
 website_url: https://pytorch.liam.kim/
+website_label: 강의 자료 보기
 repository_url: https://github.com/PyTorchKR/pytorchcore-kr
 order: 6
 sources:

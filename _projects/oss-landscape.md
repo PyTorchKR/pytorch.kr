@@ -4,6 +4,7 @@ title: PyTorchKR OSS Landscape
 summary: AI/ML 오픈소스 프로젝트를 분야별로 살펴볼 수 있는 탐색 도구입니다.
 kind: 탐색 도구
 website_url: https://oss-landscape.pytorch.kr/
+website_label: OSS Landscape 보기
 repository_url: https://github.com/PyTorchKR/oss-landscape
 order: 3
 sources:

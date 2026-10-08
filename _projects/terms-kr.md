@@ -4,6 +4,7 @@ title: AI/ML 용어집
 summary: AI/ML 용어의 한국어 표현과 정의를 함께 검토하고 정리합니다.
 kind: 용어집 · PoC
 website_url: https://terms.kr/
+website_label: 용어집 보기
 repository_url: https://github.com/PyTorchKR/terms-kr
 order: 4
 sources:

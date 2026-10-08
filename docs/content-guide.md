@@ -31,7 +31,7 @@
 
 번호가 있는 기술 세미나의 행사명은 `PyTorchKR 기술 세미나: 1회` 형식으로 통일합니다. 개별 발표 제목은 `sessions[].title`에 기록하며 행사명에 복사하지 않습니다. 기존 파일명·uid·URL은 바꾸지 않습니다.
 
-공통 필수값은 `uid`, `title`, `summary`, `sources`(공개 HTTPS URL 배열), `last_verified_at`입니다. 날짜는 반드시 문자열로 따옴표를 붙입니다. 프로젝트에는 `website_url` 또는 `repository_url`이 필요합니다. `order`는 목록 순서를 정합니다.
+공통 필수값은 `uid`, `title`, `summary`, `sources`(공개 HTTPS URL 배열), `last_verified_at`입니다. 날짜는 반드시 문자열로 따옴표를 붙입니다. 프로젝트에는 `website_url` 또는 `repository_url`이 필요합니다. `website_label`은 사이트 버튼 문구이며 생략하면 ‘사이트 보기’로 표시합니다. `order`는 목록 순서를 정합니다.
 
 프로젝트의 `group_ids`는 산출물을 함께 만드는 모임을 가리킵니다. 행사의 `group_ids`·`project_ids`는 관련 모임·산출물을 가리키며, 다른 파일에 같은 회차 목록을 중복 기입하지 않습니다. 단발 협력 행사는 관계 없이 등록할 수 있습니다.
 

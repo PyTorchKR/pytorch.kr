@@ -4,6 +4,7 @@ title: 한국어 PyTorch 튜토리얼
 summary: PyTorch 공식 튜토리얼을 한국어로 번역하고, 원문의 변경 사항을 반영합니다.
 kind: 번역
 website_url: https://tutorials.pytorch.kr/
+website_label: 튜토리얼 보기
 repository_url: https://github.com/PyTorchKR/tutorials-kr
 order: 1
 sources:

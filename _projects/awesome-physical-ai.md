@@ -4,6 +4,7 @@ title: Awesome Physical AI
 summary: Physical AI 분야의 모델·데이터셋·시뮬레이터를 정리한 공개 목록과 대시보드입니다.
 kind: 스터디 결과물
 website_url: https://pytorchkr.github.io/Awesome-Physical-AI/
+website_label: 대시보드 보기
 repository_url: https://github.com/PyTorchKR/Awesome-Physical-AI
 order: 5
 sources:

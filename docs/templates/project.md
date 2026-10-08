@@ -5,6 +5,8 @@ summary: 실제 공개된 산출물과 활용 방법을 소개합니다.
 kind: 오픈소스 프로젝트
 order: 10
 published: false
+website_url: https://example.org/
+website_label: 사이트 보기
 repository_url: https://github.com/example/project
 sources:
   - https://github.com/example/project

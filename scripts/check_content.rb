@@ -155,7 +155,7 @@ class ContentCheck
         groups = Array(data['group_ids']).filter_map { |id| @records['groups'][id] }
         programs = groups.flat_map { |g| Array(g['programs']) }.select { |p| p.is_a?(Hash) }.map { |p| p['uid'] }
         error(path, 'program must belong to a referenced group') if data['program'] && !programs.include?(data['program'])
-        error(path, 'vLLM.KR events require a tracked Meetup program') if Array(data['group_ids']).include?('vllm-kr') && !%w[korea-meetup community-meetup].include?(data['program'])
+        error(path, 'events of a group with programs require a program') if programs.any? && !data['program']
         if data['registration']
           registration = data['registration']
           if registration.is_a?(Hash)

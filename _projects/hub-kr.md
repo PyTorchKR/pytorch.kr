@@ -4,6 +4,7 @@ title: 한국어 PyTorch 모델 허브
 summary: PyTorch 모델 허브의 모델 소개와 사용 예제를 한국어로 제공합니다.
 kind: 번역
 website_url: https://pytorch.kr/hub/
+website_label: 모델 허브 보기
 repository_url: https://github.com/PyTorchKR/hub-kr
 order: 2
 sources:

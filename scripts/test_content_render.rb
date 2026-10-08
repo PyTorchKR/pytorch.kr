@@ -67,10 +67,10 @@ Dir.mktmpdir('pytorchkr-render-') do |dir|
   assert.call(index.include?('/events/future/') && index.include?('취소·일정 변경 안내') && index.include?('/events/cancelled/') && index.include?('/events/postponed/'), 'future or changed event disappeared')
   assert.call(!index.include?('draft-secret') && !File.exist?(File.join(dir, '_site/events/draft-secret/index.html')), 'unpublished event leaked')
   home = File.read(File.join(dir, '_site/index.html'))
-  project_section = home.match(/id="home-projects">(.*?)<\/section>/m)[1]
+  project_section = home.match(/id="home-projects">(.*?)id="home-events"/m)[1]
   assert.call(project_section.scan('class="activity-card"').size == 3, 'homepage must show three public projects')
   assert.call(project_section.scan(/<h3><a href="([^"]+)"/).uniq.size == 3, 'homepage projects must be distinct')
-  event_section = home.match(/id="home-events">(.*?)<\/section>/m)[1]
+  event_section = home.match(/id="home-events">(.*?)key-features-module/m)[1]
   assert.call(event_section.scan('class="event-row"').size == 3, 'homepage must show three events')
   all_events = File.read(File.join(dir, '_site/all-events.html'))
   dates = all_events.scan(/class="event-date" datetime="([^"]+)"/).flatten

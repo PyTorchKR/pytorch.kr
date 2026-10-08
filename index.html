@@ -80,16 +80,31 @@ display-news-banner: true
     </div>
   </div>
 
-  <section class="content-section community-home container" id="home-projects">
-    <div class="content-section-heading"><h2>프로젝트</h2><a href="{{ '/projects/' | relative_url }}">모든 프로젝트 보기 →</a></div>
-    <div class="activity-grid">{% assign projects = site.projects | where_exp: 'project', 'project.published != false' | sample: 3 %}{% for project in projects %}{% include activity_card.html item=project %}{% endfor %}</div>
-  </section>
-  <section class="content-section community-home content-band" id="home-events">
-    <div class="container">
-      <div class="content-section-heading"><h2>모임·행사</h2><a href="{{ '/events/' | relative_url }}">모든 행사 보기 →</a></div>
-      {% include event_list.html limit=3 %}
+  <div class="container homepage-feature-module" id="home-projects">
+    <div class="row">
+      <div class="col-md-12 position-relative">
+        <h2>PyTorchKR 프로젝트</h2>
+        <a href="{{ '/projects/' | relative_url }}" class="btn btn-lg with-right-arrow module-button position-absolute top-0 end-0">
+          모든 프로젝트 보기
+        </a>
+      </div>
     </div>
-  </section>
+    <div class="activity-grid community-home">{% assign projects = site.projects | where_exp: 'project', 'project.published != false' | sample: 3 %}{% for project in projects %}{% include activity_card.html item=project %}{% endfor %}</div>
+  </div>
+
+  <div class="container-fluid content-band" id="home-events">
+    <div class="container homepage-feature-module">
+      <div class="row">
+        <div class="col-md-12 position-relative">
+          <h2>모임·행사</h2>
+          <a href="{{ '/events/' | relative_url }}" class="btn btn-lg with-right-arrow module-button position-absolute top-0 end-0">
+            모든 행사 보기
+          </a>
+        </div>
+      </div>
+      <div class="community-home">{% include event_list.html limit=3 %}</div>
+    </div>
+  </div>
 
   <div class="container homepage-feature-module key-features-module">
     <div class="row">

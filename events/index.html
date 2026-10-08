@@ -2,11 +2,10 @@
 layout: general
 community_page: true
 navigation_key: groups
-title: 행사와 발표자료
+title: 행사 일정·발표자료
 summary: 행사 일정과 회차별 발표 영상·자료·후기를 확인할 수 있습니다.
 hero_image: /assets/images/about-background.jpg
 ---
-<nav class="content-breadcrumb" aria-label="현재 위치"><a href="{{ '/groups/' | relative_url }}">모임·행사</a><span aria-hidden="true">/</span>행사 기록</nav>
 <div class="content-actions"><a class="content-button content-button-secondary" href="#upcoming">다가오는 행사 ↓</a><a class="content-button content-button-secondary" href="#past">지난 행사 ↓</a></div>
 <section id="upcoming" class="content-section"><h2>다가오는 행사</h2>{% include event_list.html period='upcoming' %}</section>
 {% assign today = site.time | date: '%Y-%m-%d' %}
