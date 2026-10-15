@@ -1,0 +1,33 @@
+{% assign events = site.events | sort: 'event_date' %}
+{% if include.period != 'upcoming' %}{% assign events = events | reverse %}{% endif %}
+{% assign today = site.time | date: '%Y-%m-%d' %}
+{% assign count = 0 %}
+<ul class="event-list">
+  {% for event in events %}
+    {% if event.published == false %}{% continue %}{% endif %}
+    {% if include.group and event.group_ids contains include.group %}{% elsif include.group %}{% continue %}{% endif %}
+    {% if include.project and event.project_ids contains include.project %}{% elsif include.project %}{% continue %}{% endif %}
+    {% if include.program and event.program != include.program %}{% continue %}{% endif %}
+    {% if include.period == 'upcoming' %}
+      {% if event.event_date < today or event.event_status == 'cancelled' or event.event_status == 'postponed' or event.event_status == 'held' %}{% continue %}{% endif %}
+    {% elsif include.period == 'changed' %}
+      {% if event.event_date < today %}{% continue %}{% endif %}
+      {% unless event.event_status == 'cancelled' or event.event_status == 'postponed' %}{% continue %}{% endunless %}
+    {% elsif include.period == 'past' %}
+      {% if event.event_date >= today %}{% continue %}{% endif %}
+    {% endif %}
+    {% if include.limit and count >= include.limit %}{% break %}{% endif %}
+    {% assign count = count | plus: 1 %}
+    <li class="event-row">
+      <time class="event-date" datetime="{{ event.event_date }}">{{ event.event_date | date: '%Y.%m.%d' }}</time>
+      <div class="event-row-content">
+        <p class="event-meta">{% include event_status.html event=event %}{% if event.venue %} <span aria-hidden="true">·</span> {{ event.venue | escape }}{% endif %}</p>
+        <h3><a href="{{ event.url | relative_url }}">{{ event.title | escape }}</a></h3>
+        <p>{{ event.summary | escape }}</p>
+        {% if event.recording == 'limited' %}<p class="event-note">음성 녹음 문제로 영상 제공이 제한됩니다.</p>{% endif %}
+      </div>
+      <a class="content-more" href="{{ event.url | relative_url }}">상세 보기 <span class="visually-hidden">{{ event.title | escape }}</span><span aria-hidden="true"> →</span></a>
+    </li>
+  {% endfor %}
+</ul>
+{% if count == 0 %}<p class="content-empty">{% if include.period == 'upcoming' %}등록된 예정 행사가 없습니다.{% else %}등록된 행사 기록이 없습니다.{% endif %}</p>{% endif %}

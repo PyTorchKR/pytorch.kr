@@ -28,6 +28,8 @@ exclude: [
     vendor,
     node_modules,
     README.md,
+    AGENTS.md,
+    output,
     CODE_OF_CONDUCT.md,
     Gemfile,
     Gemfile.lock,
@@ -88,6 +90,12 @@ collections:
   events:
     output: true
     permalink: /events/:path/
+  projects:
+    output: true
+    permalink: /projects/:name/
+  groups:
+    output: true
+    permalink: /groups/:name/
   features:
     output: false
   get_started:
@@ -104,6 +112,14 @@ collections:
     output: false
   domains:
     output: false
+
+defaults:
+  - scope: { path: "", type: projects }
+    values: { layout: activity, navigation_key: projects, hero_image: /assets/images/features-background.jpg }
+  - scope: { path: "", type: groups }
+    values: { layout: activity, navigation_key: groups, hero_image: /assets/images/about-background.jpg }
+  - scope: { path: "", type: events }
+    values: { layout: event, navigation_key: groups, hero_image: /assets/images/about-background.jpg }
 
 # Blog Pagination
 pagination:

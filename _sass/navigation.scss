@@ -188,7 +188,7 @@
   }
 
   ul li.active a {
-    color: $orange;
+    color: mix($white, $orange, 20%);
   }
 }
 

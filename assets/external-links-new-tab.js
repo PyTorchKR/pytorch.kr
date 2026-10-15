@@ -5,7 +5,7 @@ for (var i = 0; i < links.length; i++) {
     continue;
   }
 
-  if (!links[i].hostname.includes("pytorch.kr")) {
+  if (!links[i].hostname.includes("pytorch.kr") && !links[i].hostname.includes("surge.sh")) {
     links[i].target = '_blank';
   }
 }

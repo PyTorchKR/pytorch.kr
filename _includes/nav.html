@@ -1,9 +1,10 @@
 {% assign current = page.url | downcase | remove: ".html" | split: '/' %}
+{% assign active_navigation = page.navigation_key | default: current[1] %}
 
 <div class="header-container">
-  <a class="header-logo" href="{{ site.url }}{{ site.baseurl }}" aria-label="PyTorchKR"></a>
+  <a class="header-logo" href="{{ '/' | relative_url }}" aria-label="PyTorchKR 홈"></a>
 
   {% include main_menu.html %}
 
-  <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+  <button type="button" class="main-menu-open-button" data-behavior="open-mobile-menu" aria-label="메뉴 열기" aria-expanded="false" aria-controls="mobile-navigation"></button>
 </div>

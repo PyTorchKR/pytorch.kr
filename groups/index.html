@@ -1,0 +1,11 @@
+---
+layout: general
+community_page: true
+navigation_key: groups
+title: 모임·행사
+summary: LLM 추론과 Physical AI를 다루는 모임, PyTorchKR 기술 세미나와 컨퍼런스입니다.
+hero_image: /assets/images/about-background.jpg
+---
+<div class="listing-toolbar"><a href="{{ '/events/' | relative_url }}">행사 일정·발표자료 보기 →</a></div>
+<div class="activity-grid">{% assign groups = site.groups | sort: 'order' %}{% for group in groups %}{% unless group.published == false %}{% include activity_card.html item=group %}{% endunless %}{% endfor %}</div>
+<section class="content-section"><h2>다가오는 행사</h2>{% include event_list.html period='upcoming' %}</section>

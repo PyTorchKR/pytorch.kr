@@ -1,0 +1,11 @@
+{% assign dropdown_items = include.item.dropdown_items %}
+{% if include.item.collection %}
+  {% assign collection_items = site[include.item.collection] | where_exp: 'entry', 'entry.published != false' | sort: 'order' %}
+  {% assign dropdown_items = dropdown_items | concat: collection_items %}
+{% endif %}
+{% for dropdown_item in dropdown_items %}
+  {% if dropdown_item.url_type == 'baseurl' or dropdown_item.collection %}{% assign final_url = dropdown_item.url | relative_url %}{% else %}{% assign final_url = dropdown_item.url %}{% endif %}
+  {% if include.mobile %}<li>{% endif %}
+  <a href="{{ final_url }}" class="nav-dropdown-item"{% if page.url == dropdown_item.url %} aria-current="page"{% endif %}{% if dropdown_item.target %} target="{{ dropdown_item.target }}" rel="noopener"{% endif %}><span class="dropdown-title">{{ dropdown_item.title | escape }}{% if dropdown_item.external %} <span aria-hidden="true">↗</span><span class="visually-hidden"> (외부 사이트)</span>{% endif %}</span></a>
+  {% if include.mobile %}</li>{% endif %}
+{% endfor %}

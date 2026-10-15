@@ -33,7 +33,6 @@ update: $(PROJECT_DEPS)
 
 include-submodule-deps:
 	git submodule update --init --recursive
-	git submodule update --remote
 
 include-yarn-deps:
 	mkdir -p $(VENDOR_DIR)

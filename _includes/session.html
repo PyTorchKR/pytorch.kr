@@ -1,0 +1,25 @@
+{% assign session = include.session %}
+<section class="session" id="session-{{ session.uid }}">
+  <h3>{{ session.title | escape }}</h3>
+  {% if session.speakers.size > 0 %}<p class="session-speakers">{% for speaker in session.speakers %}{{ speaker.name | escape }}{% if speaker.affiliation %} · {{ speaker.affiliation | escape }}{% endif %}{% unless forloop.last %} / {% endunless %}{% endfor %}</p>{% endif %}
+  {% if session.summary %}<p>{{ session.summary | escape }}</p>{% endif %}
+  <div class="content-actions">
+    {% if session.video.state == 'public' %}
+      <a class="content-button content-button-secondary" href="https://www.youtube.com/watch?v={{ session.video.youtube_id | escape }}{% if session.video.start_seconds %}&amp;t={{ session.video.start_seconds }}s{% endif %}">YouTube에서 보기 <span class="visually-hidden">{{ session.title | escape }}</span> →</a>
+    {% endif %}
+    {% if session.slides.state == 'public' %}<a class="content-button content-button-secondary" href="{{ session.slides.url | escape }}">발표자료{% if session.slides.format %} {{ session.slides.format | upcase | escape }}{% endif %}{% if session.slides.size_bytes %} · {{ session.slides.size_bytes | divided_by: 1048576.0 | round: 1 }} MB{% endif %} <span class="visually-hidden">{{ session.title | escape }}</span> →</a>{% endif %}
+    {% if session.code_url %}<a class="content-button content-button-secondary" href="{{ session.code_url | escape }}">코드 보기 →</a>{% endif %}
+  </div>
+  {% if session.video.state == 'public' %}
+  <div class="session-player">
+    <div class="video-container">
+      <iframe src="https://www.youtube-nocookie.com/embed/{{ session.video.youtube_id | escape }}?start={{ session.video.start_seconds | default: 0 }}" title="발표 영상: {{ session.title | escape }}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+  </div>
+  {% elsif session.video.state == 'not_recorded' %}<p class="event-note">녹화하지 않은 발표입니다.</p>
+  {% elsif session.video.state == 'private' %}<p class="event-note">발표 영상은 비공개입니다.</p>
+  {% elsif session.video.state == 'limited' %}<p class="event-note">{{ session.video.note | default: '영상 제공이 제한됩니다.' | escape }}</p>
+  {% elsif session.video.state == 'pending' %}<p class="event-note">발표 영상 공개를 준비하고 있습니다.</p>{% endif %}
+  {% if session.slides.state == 'private' %}<p class="event-note">발표자료는 비공개입니다.</p>{% elsif session.slides.state == 'pending' %}<p class="event-note">발표자료 공개를 준비하고 있습니다.</p>{% endif %}
+  {% include content_links.html links=session.related_links %}
+</section>

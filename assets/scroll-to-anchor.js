@@ -51,6 +51,12 @@ var scrollToAnchor = {
           anchorOffset = $(match).offset().top - this.getFixedOffset();
           $('html, body').scrollTop(anchorOffset);
 
+          // Move keyboard navigation to the destination after an in-page link.
+          if (pushToHistory) {
+            if (!match.hasAttribute('tabindex')) match.setAttribute('tabindex', '-1');
+            match.focus({ preventScroll: true });
+          }
+
           // Add the state to history as-per normal anchor links
           if(HISTORY_SUPPORT && pushToHistory) {
             history.pushState({}, document.title, location.pathname + href);
@@ -73,7 +79,7 @@ var scrollToAnchor = {
        * If the click event's target was an anchor, fix the scroll position.
        */
       delegateAnchors: function(e) {
-        var elem = e.target;
+        var elem = e.currentTarget;
 
         if(this.scrollIfAnchor(elem.getAttribute('href'), true)) {
           e.preventDefault();

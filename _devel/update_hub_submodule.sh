@@ -1,7 +1,5 @@
 set -ex
-pushd _hub
-git pull https://github.com/PyTorchKorea/hub-kr
-popd
+# Generate assets from the submodule revision recorded in the parent repository.
 cp _hub/images/* assets/images/
 
 python3 -c 'import notedown' || pip3 install notedown

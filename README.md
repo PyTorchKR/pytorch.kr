@@ -91,10 +91,16 @@ EOT
 ## 배포하기
 
 [파이토치 한국 사용자 모임 홈페이지](https://pytorch.kr)는 [GitHub Pages](https://pages.github.com/)를 사용합니다. \
-홈페이지는 [GitHub Actions](https://docs.github.com/en/actions)를 사용하여 자동으로 빌드 및 `gh-pages` 브랜치에 배포됩니다.
+홈페이지는 `master` 브랜치 변경과 매일 정기 실행 시 [GitHub Actions](https://docs.github.com/en/actions)에서 빌드합니다. 빌드 결과를 Pages artifact로 전달하고 GitHub Pages에 배포합니다.
+
+같은 저장소의 PR은 변경 시 Surge 미리보기를 갱신합니다. 미리보기 배포 후 `preview-revision.txt`가 빌드한 커밋과 일치해야 성공으로 처리합니다. 수동 미리보기는 열려 있는 같은 저장소의 PR만 허용하며, 외부 fork PR은 빌드·검사만 수행합니다. 두 빌드 모두 `package-lock.json`과 저장소에 기록된 서브모듈 커밋을 사용합니다.
 
 
 ## 기여하기
 
 홈페이지에서 잘못된 내용 또는 변경 / 추가하고 싶은 내용이 있다면 이 저장소에 기여하실 수 있습니다. \
 [기여하기](CONTRIBUTING.md) 문서를 참고해주세요.
+
+### 프로젝트·모임·행사 추가
+
+새 행사나 발표자료는 [콘텐츠 작성 가이드](docs/content-guide.md)와 [작성 템플릿](docs/templates/)을 따라 Markdown으로 추가합니다. 관련 목록은 자동으로 갱신됩니다. AI Agent용 진입점은 [AGENTS.md](AGENTS.md)이며, 가이드에 로컬 검증·미리보기 명령과 대용량 자료 보관 원칙을 함께 정리했습니다.

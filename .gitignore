@@ -18,3 +18,5 @@ yarn.lock
 *.old
 .jekyll-cache
 .playwright-mcp
+/.playwright-cli/
+/output/
