@@ -50,7 +50,7 @@ org_link: https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep
 
 *그림 2: 131K 컨텍스트, nextn=3에서 배치 크기에 따른 GPU당 디코드 출력 처리량. GB200 위의 vLLM과 DeepInfer의 공개 결과를 비교했으며, DeepInfer 값은 README의 차트에서 읽었습니다([출처](https://github.com/deepseek-ai/DeepInfer)). / Figure 2: Decode output throughput per GPU vs. batch size at 131K context, nextn=3. vLLM on GB200 vs. DeepInfer's published results, read from the charts in its README ([source](https://github.com/deepseek-ai/DeepInfer)).*
 
-**프리필.** DeepInfer가 공개한 프리필 곡선은 중복 전문가(redundant expert) 32개와 140토큰 제한된 리플레이(bounded replay)를 쓴 EP4DP4 구성에서 측정했으며, 차트에는 하드웨어가 적혀 있지 않습니다. 그 값은 차트에서 읽었습니다. 이번 실행에서는 GB300에서 중복 전문가 없이 DEP2, 128토큰 리플레이, 자체 프롬프트를 사용했습니다. 구성이 다르므로, 두 곡선 사이의 차이를 엔진 간 속도 향상으로 해석하지 않습니다. 그림 3이 보여 주는 것은 vLLM의 DEP2 프리필이 DeepSeek이 공개한 범위 전반에서 DeepSeek 자체 엔진의 곡선을 따라간다는 점입니다.
+**프리필.** DeepInfer가 공개한 프리필 곡선은 중복 전문가(redundant expert) 32개와 140토큰 제한된 리플레이(bounded replay)를 쓴 EP4DP4 구성으로 측정한 것이며, 차트에는 하드웨어가 적혀 있지 않습니다. 그 값은 차트에서 읽었습니다. 이번 실행에서는 GB300에서 중복 전문가 없이 DEP2, 128토큰 리플레이, 자체 프롬프트를 사용했습니다. 구성이 다르므로, 두 곡선 사이의 차이를 엔진 간 속도 향상으로 해석하지 않습니다. 그림 3이 보여 주는 것은 vLLM의 DEP2 프리필이 DeepSeek이 공개한 범위 전반에서 DeepSeek 자체 엔진의 곡선을 따라간다는 점입니다.
 > **Prefill.** DeepInfer's published prefill curve uses EP4DP4 with 32 redundant experts and a 140-token bounded replay, on hardware the chart does not state, and we read its values off the chart. Our run uses DEP2 on GB300 with no redundant experts, a 128-token replay and our own prompts. Because the setups differ, we do not read the gap between the two curves as an engine-to-engine speedup. What Figure 3 shows is that vLLM's DEP2 prefill tracks DeepSeek's own engine across the range they published.
 
 <iframe class="vllm-embed" src="/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/dsv41-pd-prefill-vs-deepinfer.html" title="프리필 곡선: vLLM DEP2 대 DeepInfer EP4DP4 / Prefill curve: vLLM DEP2 vs. DeepInfer EP4DP4" loading="lazy" scrolling="no" style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden;"></iframe>
@@ -107,7 +107,7 @@ org_link: https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep
 
 방법론을 지나치게 복잡하게 만들지 않으면서 성능을 정확하게 측정하는 일은 간단하지 않습니다. 이 문제를 두 가지 질문으로 나눴습니다. 프리필 스텝이나 디코드 스텝에 드는 비용은 얼마여야 하는가, 그리고 DP와 EP의 불균형(imbalance)으로 인한 추가 오버헤드는 얼마나 되는가입니다.
 
-- **프리필과 디코드의 스텝 시간.** `vllm bench forward`([#61339](https://github.com/vllm-project/vllm/pull/61339))는 정확히 지정한 프리필 배치나 디코드 배치에 대해, DP 랭크와 EP 랭크 전반에서 실제 `execute_model` 경로를 거치는 모델 순전파 시간을 측정합니다. 이 도구는 GPU 시간만 측정하므로 깔끔한 트레이스를 얻을 수 있습니다. 또한 vLLM의 `DecodeBenchConnector`는 주어진 동시성(concurrency)에서 엔진 수준의 엔드투엔드(end-to-end) 디코드 성능을 측정합니다. GPU만의 스텝 시간과 서빙 중의 스텝 시간을 비교하면 예상하지 못한 오버헤드가 드러납니다.
+- **프리필과 디코드의 스텝 시간.** `vllm bench forward`([#61339](https://github.com/vllm-project/vllm/pull/61339))는 정확히 지정한 프리필 배치나 디코드 배치에 대해, DP 랭크와 EP 랭크 전반에서 실제 `execute_model` 경로를 거치는 모델 순전파 시간을 측정합니다. 이 도구는 GPU 시간만 측정하므로 깔끔한 트레이스를 얻을 수 있습니다. 또한 vLLM의 `DecodeBenchConnector`는 주어진 동시성(concurrency)에서 엔진 수준의 엔드투엔드(end-to-end) 디코드 성능을 측정합니다. GPU만 측정한 스텝 시간과 서빙 중 스텝 시간을 비교하면 예상하지 못한 오버헤드가 드러납니다.
 - **프리필의 DP 불균형: 미러 재실행과 지연 재실행.** 에이전트 트레이스는 실행할 때마다 달라지므로 DP 불균형만 따로 떼어 보기 어렵습니다. 그래서 모든 DP 랭크에서 똑같은 요청을 재실행합니다. *미러(mirror)* 실행에서는 모든 랭크가 동시에 요청을 받습니다. *지연(lag)* 실행에서는 랭크 *r* 이 같은 요청을 *r* × 5초 늦게 받습니다. 따라서 랭크들의 진행 시점은 어긋나지만 전체 작업량은 같습니다. 두 실행의 차이가 DP 불균형의 비용입니다.
 - **디코드의 EP 불균형: 실제 라우팅과 균등 라우팅.** 각 MoE 레이어에 대해 균형도(balancedness)를 랭크 부하의 평균을 랭크 부하의 최댓값으로 나눈 값으로 정의하고, 스텝마다 그리고 EPLB의 윈도우 전체에 대해 계산합니다. 균형 잡힌 기준선으로는, 같은 디코드 배치를 토큰이 균등하게 무작위로 라우팅되도록 실행합니다. 이 기준선에도 샘플링 노이즈는 있습니다. DEP32에서 GPU당 요청 72개일 때, 균등 라우팅의 균형도는 타깃(top-6 라우팅)이 약 0.96, 드래프트(top-3)가 0.94입니다. 실제 라우팅과 균등 라우팅 사이의 차이가 전문가 균형 조정으로 회복할 수 있는 최대치이며, EPLB 실행 결과는 그 차이 가운데 실제로 얼마나 회복하는지 보여 줍니다.
 
@@ -159,7 +159,7 @@ Engram은 DP 랭크들이 공유하는 호스트 테이블에서 무작위 읽�
 
 </details>
 
-이 변경들을 모두 합치면, 128K 캐시된 프리픽스 위에서 4K~64K 새 토큰 구간의 **새 토큰 프리필 처리량이 35.6~43.9%** 향상됩니다. 32K에서 합산 향상 폭은 **42.5%** 이고, 64K에서는 처리량이 **71.2K에서 102.5K tokens/s/GPU로(+43.9%)** 늘어납니다.
+이 변경들을 모두 합치면, 128K 프리픽스가 캐시된 상태에서 4K~64K 새 토큰 구간의 **새 토큰 프리필 처리량이 35.6~43.9%** 향상됩니다. 32K에서 합산 향상 폭은 **42.5%** 이고, 64K에서는 처리량이 **71.2K에서 102.5K tokens/s/GPU로(+43.9%)** 늘어납니다.
 > Together, these changes improve **new-token prefill throughput by 35.6–43.9%** across 4K–64K new tokens on top of a 128K cached prefix. At 32K, the combined gain is **42.5%**; at 64K, throughput increases from **71.2K to 102.5K tokens/s/GPU (+43.9%)**.
 
 <iframe class="vllm-embed" src="/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/dsv41-pd-prefill-ablation.html" title="128K 캐시 적중 이후 DEP2의 프리필 향상 / Prefill gains on DEP2 after a 128K cache hit" loading="lazy" scrolling="no" style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden;"></iframe>
