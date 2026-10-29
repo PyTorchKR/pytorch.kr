@@ -21,7 +21,7 @@ org_link: https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep
 - **프리필에는 작은 DEP 인스턴스가 가장 좋습니다**[^terms]
 - **Wide-EP 디코드는 EPLB와 함께 잘 확장됩니다**
 - **NVL72 규모에서는 CPU 오버헤드가 결정적인 문제가 됩니다**
-- **특화된 디코드 경로가 낮은 지연 시간을 가능하게 합니다**
+- **특화된 디코드 경로로 지연 시간을 낮춥니다**
 
 > The efficiency comes from deliberate engineering on components that vLLM already has, built on the kernels DeepSeek open-sourced. This post walks through our performance study, breaks down each optimization, and shares the lessons we learned:
 >
@@ -57,7 +57,7 @@ org_link: https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep
 
 *그림 3: 새 토큰 수에 따른 프리필 처리량. GB300 위의 vLLM DEP2와 DeepInfer가 공개한 곡선(EP4DP4, 중복 전문가 32개, 140토큰 리플레이, 하드웨어 미기재)을 비교했으며, DeepInfer 값은 README의 차트에서 읽었습니다([출처](https://github.com/deepseek-ai/DeepInfer)). / Figure 3: Prefill throughput vs. new tokens. vLLM DEP2 on GB300 vs. DeepInfer's published curve (EP4DP4, 32 redundant experts, 140-token replay, hardware not stated), read from the chart in its README ([source](https://github.com/deepseek-ai/DeepInfer)).*
 
-두 엔진의 결과가 가까운 이유는 양방향으로 계보를 공유하기 때문입니다. DeepInfer는 원래 vLLM을 기반으로 만들어졌습니다. vLLM 역시 MegaAttn, MegaMoE, Mega-mHC를 포함한 DeepSeek 라이브러리의 커널을 꾸준히 통합해 왔고, 그 커널을 중심으로 스택의 나머지 부분을 폭넓게 최적화했습니다. DeepInfer는 오프라인 모드에서 단일 모델만을 대상으로 합니다. 반면 같은 vLLM 빌드는 NVL72 랙 전체에 걸쳐 P/D 분리와 Wide-EP를 적용해 이 모델을 온라인으로도 서빙하며, 이 글의 나머지 부분에서 측정하는 것이 바로 이 구성입니다. 이어지는 섹션에서 그 작업을 설명합니다.
+두 엔진의 결과가 가까운 이유는 두 엔진이 서로 기술을 주고받아 온 관계이기 때문입니다. DeepInfer는 원래 vLLM을 기반으로 만들어졌습니다. vLLM 역시 MegaAttn, MegaMoE, Mega-mHC를 포함한 DeepSeek 라이브러리의 커널을 꾸준히 통합해 왔고, 그 커널을 중심으로 스택의 나머지 부분을 폭넓게 최적화했습니다. DeepInfer는 오프라인 모드에서 단일 모델만을 대상으로 합니다. 반면 같은 vLLM 빌드는 NVL72 랙 전체에 걸쳐 P/D 분리와 Wide-EP를 적용해 이 모델을 온라인으로도 서빙하며, 이 글의 나머지 부분에서 측정하는 것이 바로 이 구성입니다. 이어지는 섹션에서 그 작업을 설명합니다.
 > The two engines land close because they share a lineage in both directions. DeepInfer was originally built on vLLM, and vLLM in turn has continuously integrated kernels from DeepSeek's libraries, including MegaAttn, MegaMoE and Mega-mHC, and has extensively optimized the rest of the stack around them. DeepInfer targets a single model in offline mode; the same vLLM build also serves this model online with P/D disaggregation and Wide-EP across a full NVL72 rack, which is what the rest of this post measures. The sections that follow describe that work.
 
 ## 내부 구조: 속도는 어디에서 오는가 / Under the hood: where the speed comes from
@@ -189,7 +189,7 @@ EPLB가 직전 1,000 스텝의 부하를 바탕으로 3,000 스텝마다 전문�
 
 *그림 6: GB300 NVL72에서 EPLB를 끈 경우, 타깃 모델에만 EPLB를 적용한 경우, 타깃 모델과 DSpark 드래프트 모두에 적용한 경우의 디코드 결과. 탭에서 스텝별 균형, DEP32의 스텝별 시간 분석, 처리량(3회 실행의 평균, 막대는 범위)을 볼 수 있습니다. / Figure 6: Decode on GB300 NVL72 with EPLB off, EPLB for the target model only, and EPLB for both the target and the DSpark draft. The tabs show per-step balance, the per-step time breakdown at DEP32, and throughput (mean of three runs; bars show the range).*
 
-두 가지 변경 덕분에 이 방식이 동작합니다. [#62009](https://github.com/vllm-project/vllm/pull/62009)는 NVLink 기반 `symm_mem` 백엔드를 도입합니다. 이 백엔드는 디코드를 멈추지 않고 DEP32 전체를 1초 이내에 재조정합니다. 또한 EPLB의 복제본(replica) 매핑과 부하 기록을 MegaMoE 커널에 융합해 스텝당 약 0.2 ms를 절약하고, 디코드 루프에서 호스트 동기화를 없앱니다. [#61395](https://github.com/vllm-project/vllm/pull/61395)는 서로 다른(heterogeneous) 타깃 모델과 드래프트 모델에서 EPLB를 지원합니다. DSpark 드래프트는 라우팅되는 전문가(routed expert)가 128개이고 top-3 라우팅을 쓰는 반면, 타깃은 384개에 top-6 라우팅을 씁니다. 그래서 EPLB는 각 모델의 전문가 배치와 부하를 따로 추적하고 둘 다 재조정합니다.
+두 가지 변경 덕분에 이 방식이 동작합니다. [#62009](https://github.com/vllm-project/vllm/pull/62009)는 NVLink 기반 `symm_mem` 백엔드를 도입합니다. 이 백엔드는 디코드를 멈추지 않고 DEP32 전체를 1초 이내에 재조정합니다. 이 PR은 또한 EPLB의 복제본(replica) 매핑과 부하 기록을 MegaMoE 커널에 융합해 스텝당 약 0.2 ms를 절약하고, 디코드 루프에서 호스트 동기화를 없앱니다. [#61395](https://github.com/vllm-project/vllm/pull/61395)는 서로 다른(heterogeneous) 타깃 모델과 드래프트 모델에서 EPLB를 지원합니다. DSpark 드래프트는 라우팅되는 전문가(routed expert)가 128개이고 top-3 라우팅을 쓰는 반면, 타깃은 384개에 top-6 라우팅을 씁니다. 그래서 EPLB는 각 모델의 전문가 배치와 부하를 따로 추적하고 둘 다 재조정합니다.
 > Two changes make this work. [#62009](https://github.com/vllm-project/vllm/pull/62009) introduces an NVLink-based `symm_mem` backend that rebalances all of DEP32 in under a second without stopping decode, fuses EPLB's replica mapping and load recording into the MegaMoE kernels (saving about 0.2 ms per step), and removes host synchronization from the decode loop. [#61395](https://github.com/vllm-project/vllm/pull/61395) supports EPLB with heterogeneous target and draft models. The DSpark draft has 128 routed experts with top-3 routing, against the target's 384 with top-6, so EPLB tracks expert placement and load separately for each model and rebalances both.
 
 ### 빠른 대규모 디코드에서 CPU 오버헤드 극복하기 / Overcome CPU overhead in fast large-scale decode
@@ -197,7 +197,7 @@ EPLB가 직전 1,000 스텝의 부하를 바탕으로 3,000 스텝마다 전문�
 Wide-EP 디코드는 레이어마다 모든 랭크를 동기화하므로, 랭크 하나만 느려도 인스턴스 전체가 멈춥니다. 비동기 스케줄링(async scheduling)은 작은 규모에서는 CPU 오버헤드를 잘 숨기지만, 랭크가 많아지면 두 가지 이유로 어려워집니다. GPU 스텝이 짧아져 CPU 작업에 쓸 여유가 줄어들고, 어느 한 랭크가 뒤처질 가능성도 커집니다.
 > Wide-EP decode synchronizes all ranks at every layer, so one slow rank stalls the instance. Async scheduling hides CPU overhead well at a small scale, but more ranks make this harder in two ways: GPU steps get shorter, which leaves less slack for CPU work, and it becomes more likely that one rank falls behind.
 
-실제로 최적화하지 않은 DEP32는 GPU 실행이 1.1 ms 더 빨랐는데도 DEP16보다 느렸습니다(스텝당 17.57 ms 대 13.84 ms). 아래 표는 찾아낸 모든 원인을 효과가 큰 순서대로 정리한 것입니다. 효과는 서로 다른 구성에서 측정했으므로, 각 행에 해당 구성을 함께 적었습니다.
+실제로 측정해 보니, 최적화하지 않은 DEP32가 GPU 실행은 1.1 ms 더 빨랐는데도 DEP16보다 느렸습니다(스텝당 17.57 ms 대 13.84 ms). 아래 표는 찾아낸 모든 원인을 효과가 큰 순서대로 정리한 것입니다. 효과는 서로 다른 구성에서 측정했으므로, 각 행에 해당 구성을 함께 적었습니다.
 > In practice, we observed that an unoptimized DEP32 ran slower than DEP16 (17.57 vs. 13.84 ms per step), although its GPU execution was 1.1 ms faster. The table below lists every cause we found, ordered by effect. The effects come from different setups, so each row gives its own.
 
 <details markdown="1">
@@ -206,7 +206,7 @@ Wide-EP 디코드는 레이어마다 모든 랭크를 동기화하므로, 랭크
 | 원인 / Cause | 해결책 / Fix | PR / PRs | 효과 / Effect | 구성 / Setup |
 |---|---|---|---|---|
 | 디코드 워커 스레드에서 KV 읽기를 동기적으로 요청 / KV read posted synchronously on the decode worker thread | UCX scatter-gather를 쓰는 NIXL push, 패킹된 KV 행을 하나의 NIXL 영역으로 전송 / NIXL push with UCX scatter-gather; packed KV rows sent as one NIXL region | [NIXL push connector](https://vllm.ai/blog/2026-10-14-nixl-push-connector), [#61121](https://github.com/vllm-project/vllm/pull/61121) | GPU당 141K → 440K tokens/s, 사용자당 P90 ~40 → 159 tokens/s / 141K → 440K tokens/s per GPU; P90 ~40 → 159 tokens/s per user | GB300, 8P1D, 동시성 3,072 / GB300, 8P1D, concurrency 3,072 |
-| Gloo all-reduce 지연 시간이 랭크 수에 비례해 선형으로 증가 / Gloo all-reduce latency grows linearly with the rank count | 재귀적 배가(recursive-doubling) CPU all-reduce / Recursive-doubling CPU all-reduce | [#61767](https://github.com/vllm-project/vllm/pull/61767) ([#60267](https://github.com/vllm-project/vllm/pull/60267) 기반 / building on #60267) | DP 동기화 스텝당 10.8 → 1.5 ms, 스텝 16.10 → 13.15 ms / DP sync 10.8 → 1.5 ms per step; step 16.10 → 13.15 ms | DEP32 디코드 / DEP32 decode |
+| Gloo all-reduce 지연 시간이 랭크 수에 비례해 선형으로 증가 / Gloo all-reduce latency grows linearly with the rank count | 재귀적 배가(recursive-doubling) CPU all-reduce / Recursive-doubling CPU all-reduce | [#61767](https://github.com/vllm-project/vllm/pull/61767) ([#60267](https://github.com/vllm-project/vllm/pull/60267) 기반 / building on [#60267](https://github.com/vllm-project/vllm/pull/60267)) | DP 동기화 스텝당 10.8 → 1.5 ms, 스텝 16.10 → 13.15 ms / DP sync 10.8 → 1.5 ms per step; step 16.10 → 13.15 ms | DEP32 디코드 / DEP32 decode |
 | 요청 수용(admission) 폭주: 한 스텝에 최대 140개 요청 수용 / Admission bursts: up to 140 requests admitted in one step | 스텝당 새 KV 로드를 4개로 제한하는 옵트인(opt-in) 상한 / Opt-in cap of 4 new KV loads per step | [#61725](https://github.com/vllm-project/vllm/pull/61725) | GPU당 460K → 516K tokens/s, 사용자당 P90 109 → 153 tokens/s / 460K → 516K tokens/s per GPU; P90 109 → 153 tokens/s per user | GB300, 7P1D, 동시성 4,800, 다른 CPU 수정 두 가지와 함께 / GB300, 7P1D, concurrency 4,800, with two other CPU fixes |
 | 프롬프트 길이에 따라 커지는 요청 수용 작업 / Admission work that grows with the prompt length | 프롬프트를 하나의 int32 버퍼로 처리, 슬라이딩 윈도우 블록 테이블의 null 블록 건너뛰기, 청크 단위 프롬프트 복사 커널 / Prompt as one int32 buffer; skip the null blocks of sliding-window block tables; chunked prompt copy kernel | [#59908](https://github.com/vllm-project/vllm/pull/59908), [#62702](https://github.com/vllm-project/vllm/pull/62702), [#61724](https://github.com/vllm-project/vllm/pull/61724), [#62698](https://github.com/vllm-project/vllm/pull/62698) | 855K 프롬프트: 요청 수용당 CPU 시간 38.8 → 6.0 ms / 855K prompt: 38.8 → 6.0 ms of CPU per admission | 엔진 마이크로벤치마크 / Engine microbenchmark |
 
