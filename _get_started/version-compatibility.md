@@ -33,6 +33,18 @@ PyTorch 및 Domain APIs의 버전 호환성을 정리하였습니다. \
   </thead>
   <tbody>
     <tr>
+      <th scope="row"><a href="https://github.com/pytorch/pytorch/releases/tag/v2.15.0" target="_blank">2.15.0</a></th>
+      <td>2026/10/28</td>
+      <td><a href="https://github.com/pytorch/vision/releases/tag/v0.29.2" target="_blank">0.29.2</a></td>
+      <td><em>—</em></td>
+      <td><em>—</em></td>
+      <td><em>—</em></td>
+      <td><a href="https://github.com/meta-pytorch/torchcodec/releases/tag/v0.17.0" target="_blank">0.17.0</a></td>
+      <td><a href="https://pypi.org/project/torch/2.15.0/" target="_blank">>=3.11, <=3.15</a></td>
+      <td>13.4; 13.2</td>
+      <td>10.0; 7.14</td>
+    </tr>
+    <tr>
       <th scope="row"><a href="https://github.com/pytorch/pytorch/releases/tag/v2.14.1" target="_blank">2.14.1</a></th>
       <td>2026/09/30</td>
       <td><a href="https://github.com/pytorch/vision/releases/tag/v0.29.1" target="_blank">0.29.1</a></td>
@@ -881,6 +893,14 @@ PyTorch 릴리즈별 지원 환경(Python, C++, CUDA, ROCm) 호환성 매트릭�
   </thead>
   <tbody>
     <tr>
+      <th scope="row">2.15</th>
+      <td>>=3.11, <=(3.15, 3.15t experimental)</td>
+      <td>C++20</td>
+      <td>CUDA 13.2 (CUDNN 9.26.0.51) (NCCL 2.30.7)</td>
+      <td>CUDA 13.4 (CUDNN 9.26.0.51) (NCCL 2.30.7)</td>
+      <td>ROCm 7.14</td>
+    </tr>
+    <tr>
       <th scope="row">2.14</th>
       <td>>=3.10, <=(3.15, 3.15t experimental)</td>
       <td>C++20</td>
@@ -1121,5 +1141,5 @@ PyTorch 2.11 릴리즈에서 지원하는 CUDA 아키텍처 정보입니다.
 </div>
 
 <p class="text-muted text-right mb-0">
-  <small><strong>Last Update:</strong> 2026-10-01</small>
+  <small><strong>Last Update:</strong> 2026-10-29</small>
 </p>
