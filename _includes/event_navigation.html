@@ -1,0 +1,5 @@
+<nav class="content-tabs" aria-label="행사 탐색">
+<a href="{{ '/events/' | relative_url }}"{% if page.url == '/events/' or page.url == '/events/index.html' %} aria-current="page"{% endif %}>예정 행사</a>
+<a href="{{ '/events/materials/' | relative_url }}"{% if page.url contains '/events/materials/' %} aria-current="page"{% endif %}>발표 영상·자료</a>
+<a href="{{ '/events/archive/' | relative_url }}"{% if page.url contains '/events/archive/' %} aria-current="page"{% endif %}>지난 행사</a>
+</nav>

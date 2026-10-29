@@ -1,0 +1,14 @@
+{% capture relations %}
+{% if include.item.collection == 'projects' or include.item.collection == 'events' %}
+  {% for group in site.groups %}{% if include.item.group_ids contains group.uid and group.published != false %}<a href="{{ group.url | relative_url }}"><span>{% if group.group_type == 'series' %}행사 시리즈{% else %}관련 모임{% endif %}</span> {{ group.title | escape }} →</a>{% endif %}{% endfor %}
+{% endif %}
+{% if include.item.collection == 'groups' or include.item.collection == 'events' %}
+  {% for project in site.projects %}{% assign connected = false %}{% if include.item.collection == 'groups' and project.group_ids contains include.item.uid %}{% assign connected = true %}{% elsif include.item.collection == 'events' and include.item.project_ids contains project.uid %}{% assign connected = true %}{% endif %}{% if connected and project.published != false %}<a href="{{ project.url | relative_url }}"><span>관련 프로젝트</span> {{ project.title | escape }} →</a>{% endif %}{% endfor %}
+{% endif %}
+{% if include.item.collection == 'groups' or include.item.collection == 'projects' %}
+{% assign event_count = 0 %}{% for event in site.events %}{% if event.published == false %}{% continue %}{% endif %}{% if include.item.collection == 'groups' and event.group_ids contains include.item.uid %}{% assign event_count = event_count | plus: 1 %}{% elsif include.item.collection == 'projects' and event.project_ids contains include.item.uid %}{% assign event_count = event_count | plus: 1 %}{% endif %}{% endfor %}
+{% if event_count > 0 %}<a href="{% unless include.item.url == page.url %}{{ include.item.url | relative_url }}{% endunless %}#related-events"><span>관련 행사</span> {{ event_count }}개 일정·기록 →</a>{% endif %}
+{% endif %}
+{% endcapture %}
+{% assign relations = relations | strip %}
+{% if relations != '' %}<div class="activity-relations" aria-label="연결된 활동">{{ relations }}</div>{% endif %}

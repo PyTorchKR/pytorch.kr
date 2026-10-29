@@ -1,0 +1,5 @@
+{% assign entries = site[include.collection] | where_exp: 'entry', 'entry.published != false' | sort: 'order' %}
+{% if include.featured %}{% assign entries = entries | where: 'featured', true %}{% endif %}
+{% if include.type %}{% assign entries = entries | where: 'group_type', include.type %}{% endif %}
+<div class="activity-grid">{% for entry in entries %}{% include activity_card.html item=entry %}{% endfor %}</div>
+{% if entries.size == 0 %}<p class="content-empty">현재 소개할 항목이 없습니다. 전체 목록에서 기록을 확인할 수 있습니다.</p>{% endif %}

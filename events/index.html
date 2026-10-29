@@ -1,0 +1,16 @@
+---
+layout: general
+community_page: true
+navigation_key: events
+title: 행사
+summary: 행사 일정과 회차별 발표 영상·자료·후기를 확인할 수 있습니다.
+hero_image: /assets/images/about-background.jpg
+---
+{% include event_navigation.html %}
+<section id="upcoming" class="content-section"><h2>다가오는 행사</h2>{% include event_list.html period='upcoming' %}</section>
+{% assign today = site.time | date: '%Y-%m-%d' %}
+{% assign changed_count = 0 %}
+{% for event in site.events %}{% if event.published != false and event.event_date >= today %}{% if event.event_status == 'cancelled' or event.event_status == 'postponed' %}{% assign changed_count = changed_count | plus: 1 %}{% endif %}{% endif %}{% endfor %}
+{% if changed_count > 0 %}<section class="content-section"><h2>취소·일정 변경 안내</h2>{% include event_list.html period='changed' %}</section>{% endif %}
+<section class="content-section"><div class="content-section-heading"><h2>행사 시리즈</h2><a href="{{ '/groups/all/' | relative_url }}">전체 모임·시리즈 보기 →</a></div>{% include activity_directory.html collection='groups' type='series' %}</section>
+<section id="past" class="content-section"><h2>지난 행사와 발표자료</h2><p>이전 회차의 일정과 후기는 지난 행사에서, 공개된 발표 영상과 슬라이드는 발표 영상·자료에서 찾아볼 수 있습니다.</p><div class="content-actions"><a class="content-button content-button-secondary" href="{{ '/events/archive/' | relative_url }}">지난 행사 전체 보기 →</a><a class="content-button content-button-secondary" href="{{ '/events/materials/' | relative_url }}">발표 영상·자료 보기 →</a></div></section>

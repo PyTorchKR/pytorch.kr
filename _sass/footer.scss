@@ -125,7 +125,7 @@
 
   a {
     font-size: rem(18px);
-    color: $orange;
+    color: mix($white, $orange, 20%);
     &:hover {
       color: $white;
     }

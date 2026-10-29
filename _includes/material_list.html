@@ -1,0 +1,10 @@
+{% assign events = site.events | sort: 'event_date' | reverse %}
+{% assign material_count = 0 %}
+{% for event in events %}{% if event.published == false %}{% continue %}{% endif %}
+{% capture talks %}{% for session in event.sessions %}{% if session.video.state == 'public' or session.slides.state == 'public' %}
+{% assign material_count = material_count | plus: 1 %}
+<li id="material-{{ event.uid }}--{{ session.uid }}" tabindex="-1"><a href="{{ event.url | relative_url }}#session-{{ session.uid }}">{{ session.title | escape }}</a><p class="event-meta">{% for speaker in session.speakers %}{{ speaker.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% if session.speakers.size > 0 %} · {% endif %}{% if session.video.state == 'public' %}영상{% endif %}{% if session.video.state == 'public' and session.slides.state == 'public' %} · {% endif %}{% if session.slides.state == 'public' %}발표자료{% endif %}</p></li>
+{% endif %}{% endfor %}{% endcapture %}{% assign talks = talks | strip %}
+{% if talks != '' %}<section class="material-event"><p class="content-eyebrow">{{ event.event_date | date: '%Y.%m.%d' }}</p><h3><a href="{{ event.url | relative_url }}">{{ event.title | escape }}</a></h3><ul class="content-links">{{ talks }}</ul></section>{% endif %}
+{% endfor %}
+{% if material_count == 0 %}<p class="content-empty">등록된 공개 발표 영상·자료가 없습니다.</p>{% endif %}
