@@ -64,17 +64,17 @@ Nemotron 3.5는 RNN-T 아키텍처를 바탕으로 만든 다국어 스트리밍
 > 2. The **predictor** uses an LSTM to represent the history of emitted tokens.
 > 3. The **joiner** uses a small feedforward layer to combine the encoder’s audio representation with the predictor’s token-history representation and predict the next token. It can also produce a *blank*, which advances decoding to the next audio position.
 
-프런트엔드(frontend)는 오디오를 로그 멜(log-mel) 특징 벡터로 변환하며, **10ms** 마다 벡터를 하나씩 만듭니다. 인코더는 시간 위치(time position)의 수를 **8** 분의 1로 줄이므로, 인코더 출력은 오디오 **80ms** 마다 위치 하나를 갖습니다. 이렇게 하면 같은 길이의 오디오를 더 압축된 시퀀스로 표현할 수 있습니다.
+프런트엔드(frontend)는 오디오를 로그 멜(log-mel) 특징 벡터로 변환하며, **10ms**마다 벡터를 하나씩 만듭니다. 인코더는 시간 위치(time position)의 수를 **8**분의 1로 줄이므로, 인코더 출력은 오디오 **80ms**마다 위치 하나를 갖습니다. 이렇게 하면 같은 길이의 오디오를 더 압축된 시퀀스로 표현할 수 있습니다.
 > The frontend converts audio into log-mel feature vectors, producing one vector for every **10 ms**. The encoder reduces the number of time positions by a factor of **8**, so its output has one position for every **80 ms** of audio. This creates a more compact sequence representing the same audio duration.
 
 ![파형 윈도우에서 스트리밍 인코더 위치까지 / From waveform windows to streaming encoder positions](/assets/blog/2026-10-26-optimizing-streaming-speech-recognition-on-arm-edge-devices-with-executorch/2-3.png){:style="width:100%"}
 
 *그림 2. 파형 윈도우에서 스트리밍 인코더 위치까지 / Figure 2. From waveform windows to streaming encoder positions.*
 
-*미리보기(lookahead)* 는 청크 안에서 쓸 수 있는 미래 문맥이고, *청크 주기(chunk cadence)* 는 호출 한 번을 위해 새 오디오를 얼마나 자주 모으는지를 뜻합니다. lookahead 13에서는 호출 한 번이 **1,120ms** 의 오디오를 모아 인코더 위치 14개를 만듭니다. 예측기와 결합기는 **유효한 위치 14개 모두** 를 처리하고, 거기서 나온 토큰을 전사 결과에 누적합니다.
+*미리보기(lookahead)* 는 청크 안에서 쓸 수 있는 미래 문맥이고, *청크 주기(chunk cadence)* 는 호출 한 번을 위해 새 오디오를 얼마나 자주 모으는지를 뜻합니다. 미리보기 13에서는 호출 한 번이 **1,120ms**의 오디오를 모아 인코더 위치 14개를 만듭니다. 예측기와 결합기는 **유효한 위치 14개 모두**를 처리하고, 거기서 나온 토큰을 전사 결과에 누적합니다.
 > *Lookahead* is the future context available within a chunk; *chunk cadence* is how often fresh audio is collected for a call. At lookahead 13, a call collects **1,120 ms** of audio and produces 14 encoder positions. The predictor and joiner processes **all 14 valid positions**, accumulating their tokens into the transcript.
 
-lookahead 0, 3, 6은 각각 **80, 320, 560ms** 청크에 해당합니다. 청크가 길수록 첫 텍스트와 이후 업데이트를 기다리는 시간이 늘어나며, 오디오를 모은 뒤에는 전처리와 추론 시간이 더해집니다.
+미리보기 0, 3, 6은 각각 **80, 320, 560ms** 청크에 해당합니다. 청크가 길수록 첫 텍스트와 이후 업데이트를 기다리는 시간이 늘어나며, 오디오를 모은 뒤에는 전처리와 추론 시간이 더해집니다.
 > Lookaheads 0, 3, and 6 give **80, 320, and 560 ms** chunks. Longer chunks increase the wait for the first text and subsequent updates; preprocessing and inference add time after audio collection.
 
 ## 청크 크기와 정밀도를 함께 고르기 / Choose chunk size and precision together
@@ -89,18 +89,18 @@ FP32, FP16, INT8을 네 가지 청크 크기에서 평가했습니다. INT8 사�
 
 *그림 3. 네 개 코퍼스에 걸친 청크 크기별 스트리밍 WER / Figure 3. Streaming WER versus chunk size across four corpora.*
 
-위 그림의 각 점은 LibriSpeech Other(LS Other), AMI Cleaned, Earnings22, VoxPopuli Cleaned AA 데이터셋의 **발화(utterance) 14,019개** 를 포괄합니다. WER은 네 코퍼스 전체의 단어 오류 총수를 참조 단어 총수로 나눈 값입니다.
+위 그림의 각 점은 LibriSpeech Other(LS Other), AMI Cleaned, Earnings22, VoxPopuli Cleaned AA 데이터셋의 **발화(utterance) 14,019개**를 포괄합니다. WER은 네 코퍼스 전체의 단어 오류 총수를 참조 단어 총수로 나눈 값입니다.
 > Each point on the above figure covers **14,019 utterances** from LibriSpeech Other (LS Other), AMI Cleaned, Earnings22, and VoxPopuli Cleaned AA datasets. WER divides total word errors by total reference words across all four corpora.
 
-**청크가 길수록 최종 전사 결과의 정확도가 높아집니다.** 80ms에서 1,120ms로 늘리면 FP16의 WER은 **15.2%에서 11.5%로**, QC8W는 **15.5%에서 11.7%로** 떨어집니다. **FP16은 FP32와 사실상 같으며**, 모든 청크 크기에서 차이가 **0.03%p 미만** 이므로 이후 성능 분석에서는 FP32를 제외합니다. **QC8W도 높은 정확도를 유지하며**, FP32 대비 WER이 **0.21~0.31%p** 늘어나는 데 그칩니다.
+**청크가 길수록 최종 전사 결과의 정확도가 높아집니다.** 80ms에서 1,120ms로 늘리면 FP16의 WER은 **15.2%에서 11.5%로**, QC8W는 **15.5%에서 11.7%로** 떨어집니다. **FP16은 FP32와 사실상 같으며**, 모든 청크 크기에서 차이가 **0.03%p 미만**이므로 이후 성능 분석에서는 FP32를 제외합니다. **QC8W도 높은 정확도를 유지하며**, FP32 대비 WER이 **0.21~0.31%p** 늘어나는 데 그칩니다.
 > **Longer chunks improve final-transcript accuracy.** From 80 to 1,120 ms, FP16 WER falls from **15.2% to 11.5%**, and QC8W from **15.5% to 11.7%**. **FP16 essentially matches FP32**, differing by less than **0.03 percentage points** at every chunk size, so we exclude FP32 from further performance analysis. **QC8W preserves strong accuracy**, adding **0.21–0.31 percentage points** of WER relative to FP32.
 
-이 호스트 WER 결과는 정밀도와 lookahead를 고르는 근거가 됩니다. 하지만 기기에서 텍스트가 나타나기까지 얼마나 걸리는지는 측정하지 않습니다.
+이 호스트 WER 결과는 정밀도와 미리보기를 고르는 근거가 됩니다. 하지만 기기에서 텍스트가 나타나기까지 얼마나 걸리는지는 측정하지 않습니다.
 > These host WER results inform precision and lookahead choices. However, it does not measure how long it takes for text to appear on the device.
 
 ## 엣지 기기에서 실시간 예산 검증하기 / Test the real-time budget on an edge device
 
-Google Pixel 11 스마트폰에서 **1,120ms 청크** 와 **중간 코어(mid-core) CPU 하나에 고정한 추론 스레드 하나** 로 **24.9초 길이의 녹음** 을 처리했습니다. 시스템에서 지속적으로 도는 스트리밍 워크로드를 대표하는 대상으로 중간 코어 CPU를 골랐습니다. ExecuTorch 1.3.1을 SME2 지원을 켠 빌드와 끈 빌드, 두 가지로 만들어 시험했습니다. 두 빌드 모두 XNNPACK과 KleidiAI를 포함했고, 같은 모델 아티팩트를 사용했습니다.
+Google Pixel 11 스마트폰에서 **1,120ms 청크**와 **중간 코어(mid-core) CPU 하나에 고정한 추론 스레드 하나**로 **24.9초 길이의 녹음**을 처리했습니다. 시스템에서 지속적으로 도는 스트리밍 워크로드를 대표하는 대상으로 중간 코어 CPU를 골랐습니다. ExecuTorch 1.3.1을 SME2 지원을 켠 빌드와 끈 빌드, 두 가지로 만들어 시험했습니다. 두 빌드 모두 XNNPACK과 KleidiAI를 포함했고, 같은 모델 아티팩트를 사용했습니다.
 > We processed a **24.9-second recording** on a Google Pixel 11 smartphone device using **1,120 ms chunks** and **one inference thread pinned to a mid-core CPU**. We chose the mid-core CPU as a representative target for a sustained streaming workload on the system. We tested two builds of ExecuTorch 1.3.1, toggling SME2 support on and off. Each build retained XNNPACK and KleidiAI, and used identical model artifacts.
 
 각 구성은 워밍업 두 번과 측정용 트레이싱 실행 한 번으로 진행했습니다. 총 시간은 불러온 녹음을 오디오 전처리부터 최종 디토큰화(detokenization)까지 처리하는 시간입니다.
@@ -113,18 +113,18 @@ Google Pixel 11 스마트폰에서 **1,120ms 청크** 와 **중간 코어(mid-co
 **SME2는 처리 시간을 크게 줄입니다:** FP16은 **9.79초에서 4.61초로**(**2.12배** 빠름), QC8W는 **5.20초에서 3.24초로**(**1.61배** 빠름) 줄었습니다.
 > **SME2 substantially reduces processing time:** FP16 falls from **9.79 to 4.61 seconds** (**2.12x** faster), and QC8W from **5.20 to 3.24 seconds** (**1.61x** faster).
 
-SME2 유무와 관계없이 두 정밀도 모두 녹음을 오디오 길이보다 훨씬 짧은 시간에 처리합니다. 처리 시간을 오디오 길이로 나누면, (SME2를 켠 상태에서) 실시간 계수(real-time factor)는 **FP16이 0.19, QC8W가 0.13** 입니다. 추론 스레드 하나만으로도 처리 여유(headroom)가 상당하다는 뜻입니다. 다만 오디오는 디코딩하기 전에 먼저 도착해야 하므로, 이 여유가 청크 수집 지연을 없애지는 않습니다. 하지만 청크 사이에 다른 CPU 작업을 할 여력을 남기고, 지속적인 전사 중 발열 부하를 관리하는 데 도움이 될 수 있습니다.
+SME2 유무와 관계없이 두 정밀도 모두 녹음을 오디오 길이보다 훨씬 짧은 시간에 처리합니다. 처리 시간을 오디오 길이로 나누면, (SME2를 켠 상태에서) 실시간 계수(real-time factor)는 **FP16이 0.19, QC8W가 0.13**입니다. 추론 스레드 하나만으로도 처리 여유(headroom)가 상당하다는 뜻입니다. 다만 오디오는 디코딩하기 전에 먼저 도착해야 하므로, 이 여유가 청크 수집 지연을 없애지는 않습니다. 하지만 청크 사이에 다른 CPU 작업을 할 여력을 남기고, 지속적인 전사 중 발열 부하를 관리하는 데 도움이 될 수 있습니다.
 > With and without SME2, both process the recording in much less time than its audio duration. Dividing the processing time by the audio duration we calculate real-time factors of **0.19 for FP16** and **0.13 for QC8W** (with SME2 on). This provides substantial processing headroom with only a single inference thread. Audio still has to arrive before it can be decoded, so this headroom does not remove the chunk-collection delay. But it leaves capacity for other CPU work between chunks and can help manage thermal load during sustained transcription.
 
 ## ETDump로 병목 찾기 / Find the bottleneck with ETDump
 
-[ETDump](https://docs.pytorch.org/executorch/1.3/devtools-overview.html)는 ExecuTorch 연산자 이벤트와 시간을 기록합니다. **FP16의 2.12배** 와 **QC8W의 1.61배** 속도 향상이 어디에서 오는지 이해하기 위해, 인코더, 예측기, 결합기 전반의 머신러닝(ML) 연산자를 다음 범주로 묶었습니다:
+[ETDump](https://docs.pytorch.org/executorch/1.3/devtools-overview.html)는 ExecuTorch 연산자 이벤트와 시간을 기록합니다. **FP16의 2.12배**와 **QC8W의 1.61배** 속도 향상이 어디에서 오는지 이해하기 위해, 인코더, 예측기, 결합기 전반의 머신러닝(ML) 연산자를 다음 범주로 묶었습니다:
 
 - **GEMM(파란색):** 행렬 곱셈으로, 주로 인코더의 밀집(dense) 계층입니다.
 - **데이터 이동(주황색):** 복사, 연결(concatenation), 반복(repeat), 임베딩 조회입니다.
 - **요소별 연산(빨간색):** 활성화, 비교 등 값 하나하나에 하는 작업입니다.
 - **합성곱과 정규화(초록색과 보라색):** 합성곱 필터와 정규화 연산자이며, 여기서는 둘 다 비교적 작습니다.
-- **기타(바이올렛):** 텐서 생성처럼 시간이 측정된 나머지 작은 연산입니다.
+- **기타(자주색):** 텐서 생성처럼 시간이 측정된 나머지 작은 연산입니다.
 - **오버헤드(회색):** 묶은 연산자 이벤트 바깥의 전체 실행 시간이며, 러너(runner)와 프레임워크 오버헤드가 포함될 수 있습니다.
 
 > [ETDump](https://docs.pytorch.org/executorch/1.3/devtools-overview.html) records ExecuTorch operator events and timings. To understand where the **2.12X FP16** and **1.61X QC8W** speedups come from, we grouped machine learning (ML) operators across the encoder, predictor, and joiner into categories:
@@ -153,7 +153,7 @@ SME2를 켜면 GEMM 시간이 **FP16은 8.2초에서 3.1초로**, **QC8W는 4.1�
 ETDump는 비용이 큰 연산자 계열이 어디인지 알려주지만, 그 연산자를 실행하는 네이티브 마이크로커널의 이름은 알려주지 않습니다.
 > ETDump locates the expensive operator families, but does not name the native microkernels that execute them.
 
-[Arm Streamline](https://developer.arm.com/tools-and-software/streamline-performance-analyzer)으로 네이티브 호출 경로를 샘플링하고 하드웨어 카운터를 측정할 수 있습니다. Pixel 11에서 측정한 SME 활용률은 **FP16이 38.4%**, **QC8W가 53.7%** 였습니다. 이 값은 각 캡처 동안 행렬 하드웨어가 얼마나 할당되었는지를 나타내며, 최대 연산 처리량 대비 비율이 아닙니다. 또한 GEMM 함수를 샘플링해 각 빌드가 선택한 마이크로커널을 확인했습니다.
+[Arm Streamline](https://developer.arm.com/tools-and-software/streamline-performance-analyzer)으로 네이티브 호출 경로를 샘플링하고 하드웨어 카운터를 측정할 수 있습니다. Pixel 11에서 측정한 SME 활용률은 **FP16이 38.4%**, **QC8W가 53.7%** 였습니다. 이 값은 각 캡처 시간 중 행렬 하드웨어가 할당된 비율을 나타내며, 최대 연산 처리량 대비 비율이 아닙니다. 또한 GEMM 함수를 샘플링해 각 빌드가 선택한 마이크로커널을 확인했습니다.
 > [Arm Streamline](https://developer.arm.com/tools-and-software/streamline-performance-analyzer) allows us to sample native call paths and measure hardware counters. On the Pixel 11, we measured **38.4% SME utilization for FP16** and **53.7% for QC8W**. This indicates how much of each capture the matrix hardware was allocated; it is not a percentage of peak arithmetic throughput. We also sampled GEMM functions to identify the microkernels selected by each build.
 
 함수 이름을 보면 샘플링된 경로를 알 수 있습니다. `_sme2_mopa` 접미사는 행렬 외적 누적(matrix outer-product accumulation) 루틴을 뜻합니다. NEON과 I8MM은 대조(control) 경로에서 쓰는 벡터 명령어 계열입니다.
@@ -172,7 +172,7 @@ ETDump는 비용이 큰 연산자 계열이 어디인지 알려주지만, 그 �
 이는 생태계의 **도구 공백(tooling gap)** 을 보여줍니다. ETDump는 모델 연산자 시간을, Streamline은 네이티브 함수 샘플을 보여주지만, 어느 도구도 이 두 관점을 직접 연결하지 않습니다. 개별 모델 계층을 관찰된 커널 함수에 대응시키는 일은 향후 과제로 남아 있습니다.
 > This highlights a **tooling gap** in the ecosystem. ETDump exposes model operator timings, while Streamline samples native functions, but neither tool directly connects these views. Mapping individual model layers to the observed kernel functions remains future work.
 
-## 동작 지점 고르기 / Choosing an operating point
+## 동작점 고르기 / Choosing an operating point
 
 배포할 때는 정밀도와 청크 크기를 조합하며 응답 지연 시간과 정확도의 균형을 맞춰야 합니다. 애플리케이션은 정확도 목표에서 출발할 수도, 지연 시간 예산에서 출발할 수도 있습니다. 아래 예시는 두 접근을 모두 보여줍니다.
 > Deployment involves balancing response latency and accuracy across precision and chunk size. An application might start with an accuracy target or a latency budget; the following examples illustrate both approaches.
@@ -180,7 +180,7 @@ ETDump는 비용이 큰 연산자 계열이 어디인지 알려주지만, 그 �
 아래 그림 6은 호스트 WER 결과를 **SME2를 켠** FP16과 QC8W의 Pixel 11 구성 요소 벤치마크와 짝지어 보여줍니다. 회색 눈금은 오디오 수집이 끝나는 시점을 표시하고, 점선 구간은 측정한 연산 지연을 더한 것입니다.
 > Figure 6 below pairs the host WER results with a Pixel 11 component benchmark for **SME2-enabled** FP16 and QC8W. Grey ticks mark when audio collection finishes; dotted segments add the measured compute delay.
 
-x축은 **조건부 첫 토큰까지의 시간 추정값** 으로, 오디오 수집 시간에 인코더-예측기-결합기 시퀀스 시간의 중앙값을 더한 값입니다. 구성 요소 벤치마크는 합성 입력과 새로 초기화한 스트림 상태를 사용했고, 구성마다 세 라운드에 걸쳐 75개 샘플을 측정했습니다. 첫 출력에서 텍스트가 나온다고 가정합니다.
+x축은 **조건부 첫 토큰까지의 시간 추정값**으로, 오디오 수집 시간에 인코더-예측기-결합기 시퀀스 시간의 중앙값을 더한 값입니다. 구성 요소 벤치마크는 합성 입력과 새로 초기화한 스트림 상태를 사용했고, 구성마다 세 라운드에 걸쳐 75개 샘플을 측정했습니다. 첫 출력에서 텍스트가 나온다고 가정합니다.
 > The x-axis is a **conditional time to first-token estimate**: audio collection time plus the median encoder–predictor–joiner sequence time. The component benchmark used synthetic input, fresh stream state, and 75 measured samples per configuration across three rounds. It assumes the first output emits text.
 
 ![SME2를 켠 상태의 WER과 추정 첫 토큰 지연 시간 / WER versus estimated first-token latency with SME2 enabled](/assets/blog/2026-10-26-optimizing-streaming-speech-recognition-on-arm-edge-devices-with-executorch/6-1.png){:style="width:100%"}
@@ -190,7 +190,7 @@ x축은 **조건부 첫 토큰까지의 시간 추정값** 으로, 오디오 수
 예시로 **WER 상한을 13%** 로 두면, FP16과 QC8W 모두 **320, 560, 1,120ms** 청크 크기에서 기준을 충족합니다. 320ms 청크는 더 빠른 응답에 유리하며, WER은 **FP16이 12.67%**, **QC8W가 12.97%** 입니다. 청크가 길수록 정확도가 높아져 1,120ms에서 각각 **11.50%** 와 **11.72%** 에 이르지만, 전사 결과가 나타나기 시작하기 전에 더 많은 오디오가 도착해야 합니다.
 > For an illustrative **13% WER ceiling**, both FP16 and QC8W qualify at **320, 560, and 1,120 ms** chunk sizes. The 320 ms chunks favor earlier responses, with **12.67% WER for FP16** and **12.97% for QC8W**. Longer chunks improve accuracy, reaching **11.50%** and **11.72%**, respectively, at 1,120 ms, but require more audio to arrive before transcripts begin to appear.
 
-**지연 시간 예산이 800ms** 라면, 두 정밀도 모두 **320ms** 와 **560ms** 에서 예산 안에 들어오고, 예시로 든 **WER 상한 13%** 보다도 낮습니다. 320ms 구성은 더 빠른 응답에, 560ms 구성은 더 나은 정확도에 유리합니다. 560ms에서 FP16은 **12.01% WER** 과 추정 지연 **691ms** 를, QC8W는 **12.26%** 와 **660ms** 를 보입니다. 이 경우 80ms 구성은 두 정밀도 모두 WER 목표를 충족하지 못합니다. 반대로 1,120ms 구성은 두 정밀도 모두 지연 시간 예산을 넘습니다.
+**지연 시간 예산이 800ms**라면, 두 정밀도 모두 **320ms**와 **560ms**에서 예산 안에 들어오고, 예시로 든 **WER 상한 13%** 보다도 낮습니다. 320ms 구성은 더 빠른 응답에, 560ms 구성은 더 나은 정확도에 유리합니다. 560ms에서 FP16은 **12.01% WER**과 추정 지연 **691ms**를, QC8W는 **12.26%** 와 **660ms**를 보입니다. 이 경우 80ms 구성은 두 정밀도 모두 WER 목표를 충족하지 못합니다. 반대로 1,120ms 구성은 두 정밀도 모두 지연 시간 예산을 넘습니다.
 > For an **800 ms latency budget**, both precisions at **320 ms** and **560 ms** fall within the budget and also below the illustrated **13% WER ceiling**. The 320 ms configurations favor earlier responses while 560 ms gives better accuracy. At 560 ms, FP16 combines **12.01% WER** with an estimated **691 ms** delay, while QC8W combines **12.26%** with **660 ms**. Here, both 80 ms configurations miss the WER target. Conversely, both 1,120 ms configurations miss the latency budget.
 
 ## 결론: 개발자에게 주는 의미 / Conclusion: What does this mean for developers
