@@ -7,6 +7,7 @@ category: ["vllm.ai", "translation"]
 date: 2026-10-23 12:00:00
 org_title: "Serving DeepSeek-V4.1-Flash at Scale: vLLM Matches DeepInfer and Scales to GB300 NVL72"
 org_link: https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep
+image: /assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/hero.png
 ---
 
 ![GB300 NVL72 랙 한 대에서 P/D 분리와 Wide-EP를 적용해 SemiAnalysis AgentX로 측정한 DeepSeek-V4.1-Flash 처리량 7.9배 향상, DeepInfer와 대등한 성능 / 7.9x throughput for DeepSeek-V4.1-Flash with P/D and Wide-EP on a GB300 NVL72 rack, measured on SemiAnalysis AgentX, and on par with DeepInfer](/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/hero.png){:style="width:100%"}
@@ -14,7 +15,7 @@ org_link: https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep
 **TL;DR:** NVIDIA GB300 NVL72 랙 한 대에서, 프리필/디코드 분리(P/D disaggregation)와 Wide-EP(전문가 병렬화를 데이터 병렬화와 결합해 많은 GPU로 넓힌 방식)를 적용한 vLLM은 SemiAnalysis AgentX에서 DeepSeek-V4.1-Flash를 **GPU당 954K tokens/s** 로 서빙합니다. 이때 사용자당 P90 속도는 196 tokens/s입니다. 이는 [첫 번째 글](https://vllm.ai/blog/2026-10-07-deepseek-v41-flash)의 단일 노드 결과보다 **7.9배** 높은 수치이며, DeepSeek의 비혼잡 시간대(off-peak) 가격으로 환산하면 **GPU 시간당 $38.96** 입니다. 특화된 디코드 경로는 단일 사용자 기준 **826 tokens/s** 에 도달합니다. DeepSeek의 자체 엔진인 DeepInfer와 비교하면, vLLM의 디코드 처리량은 배치 크기 8~256 전 구간에서 **6%** 이내이고, 프리필도 DeepInfer가 공개한 곡선을 따라갑니다.
 > **TL;DR:** On one NVIDIA GB300 NVL72 rack, vLLM with P/D disaggregation and Wide-EP serves DeepSeek-V4.1-Flash on SemiAnalysis AgentX at **954K tokens/s per GPU** at a P90 of 196 tokens/s per user, **7.9×** our single-node result from the [first post](https://vllm.ai/blog/2026-10-07-deepseek-v41-flash) and **$38.96 per GPU-hour** at DeepSeek's off-peak prices. A specialized decode path reaches **826 tokens/s** for a single user. Against DeepInfer, DeepSeek's own engine, vLLM's decode throughput is within **6%** across batch sizes 8–256, and its prefill tracks DeepInfer's published curve.
 
-이 효율은 vLLM에 이미 있는 구성 요소를 공들여 엔지니어링한 결과이며, DeepSeek이 오픈소스로 공개한 커널 위에 만들어졌습니다. 이번 글에서는 성능 연구 과정을 따라가며 각 최적화를 하나씩 분석하고, 그 과정에서 얻은 교훈을 공유합니다:
+이 효율은 DeepSeek이 오픈소스로 공개한 커널을 토대로, vLLM에 이미 있는 구성 요소를 공들여 엔지니어링한 결과입니다. 이번 글에서는 성능 연구 과정을 따라가며 각 최적화를 하나씩 분석하고, 그 과정에서 얻은 교훈을 공유합니다:
 
 - **범용 엔진도 특정 모델 전용 엔진과 대등한 성능을 낼 수 있습니다**
 - **최적화하기 전에 모델을 이해합니다**
@@ -43,19 +44,19 @@ org_link: https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep
 [DeepInfer](https://github.com/deepseek-ai/DeepInfer)는 DeepSeek이 DeepSeek-V4.1-Flash를 위해 만든 자체 추론 엔진으로, 이번 주에 프리필 곡선과 디코드 곡선을 함께 공개한 오프라인 엔진입니다. 이 모델에 가장 적합한 비교 대상이므로, 최적화 내용을 다루기 전에 vLLM이 DeepInfer와 비교해 어디쯤에 있는지 먼저 보여 드립니다.
 > [DeepInfer](https://github.com/deepseek-ai/DeepInfer) is DeepSeek's own inference engine for DeepSeek-V4.1-Flash, released this week as an offline engine with published prefill and decode curves. It is the most relevant reference for this model, so before going into our optimizations we show where vLLM stands against it.
 
-**디코드.** DeepSeek의 디코드 구성(131K 컨텍스트, nextn=3)에서, GB200 위의 vLLM은 배치 크기 8~256 전 구간에서 DeepInfer가 공개한 결과의 6% 이내 처리량을 달성합니다(그림 2).
+**디코드.** DeepSeek의 디코드 구성(131K 컨텍스트, nextn=3)에서, GB200에서 실행한 vLLM은 배치 크기 8~256 전 구간에서 DeepInfer가 공개한 결과의 6% 이내 처리량을 달성합니다(그림 2).
 > **Decode.** Under DeepSeek's decode configuration (131K context, nextn=3), vLLM on GB200 achieves throughput within 6% of DeepInfer's published results across batch sizes 8 to 256 (Figure 2).
 
-<iframe class="vllm-embed" src="/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/dsv41-pd-decode-vs-deepinfer.html" title="GB200 DEP32 위의 vLLM이 DeepSeek의 디코드 곡선을 따라감 / vLLM on GB200 DEP32 tracks DeepSeek's decode curve" loading="lazy" scrolling="no" style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden;"></iframe>
+<iframe class="vllm-embed" src="/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/dsv41-pd-decode-vs-deepinfer.html" title="GB200 DEP32에서 실행한 vLLM이 DeepSeek의 디코드 곡선을 따라감 / vLLM on GB200 DEP32 tracks DeepSeek's decode curve" loading="lazy" scrolling="no" style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden;"></iframe>
 
-*그림 2: 131K 컨텍스트, nextn=3에서 배치 크기에 따른 GPU당 디코드 출력 처리량. GB200 위의 vLLM과 DeepInfer의 공개 결과를 비교했으며, DeepInfer 값은 README의 차트에서 읽었습니다([출처](https://github.com/deepseek-ai/DeepInfer)). / Figure 2: Decode output throughput per GPU vs. batch size at 131K context, nextn=3. vLLM on GB200 vs. DeepInfer's published results, read from the charts in its README ([source](https://github.com/deepseek-ai/DeepInfer)).*
+*그림 2: 131K 컨텍스트, nextn=3에서 배치 크기에 따른 GPU당 디코드 출력 처리량. GB200에서 실행한 vLLM과 DeepInfer의 공개 결과를 비교했으며, DeepInfer 값은 README의 차트에서 읽었습니다([출처](https://github.com/deepseek-ai/DeepInfer)). / Figure 2: Decode output throughput per GPU vs. batch size at 131K context, nextn=3. vLLM on GB200 vs. DeepInfer's published results, read from the charts in its README ([source](https://github.com/deepseek-ai/DeepInfer)).*
 
 **프리필.** DeepInfer가 공개한 프리필 곡선은 중복 전문가(redundant expert) 32개와 140토큰 제한된 리플레이(bounded replay)를 쓴 EP4DP4 구성으로 측정한 것이며, 차트에는 하드웨어가 적혀 있지 않습니다. 그 값은 차트에서 읽었습니다. 이번 실행에서는 GB300에서 중복 전문가 없이 DEP2, 128토큰 리플레이, 자체 프롬프트를 사용했습니다. 구성이 다르므로, 두 곡선 사이의 차이를 엔진 간 속도 향상으로 해석하지 않습니다. 그림 3이 보여 주는 것은 vLLM의 DEP2 프리필이 DeepSeek이 공개한 범위 전반에서 DeepSeek 자체 엔진의 곡선을 따라간다는 점입니다.
 > **Prefill.** DeepInfer's published prefill curve uses EP4DP4 with 32 redundant experts and a 140-token bounded replay, on hardware the chart does not state, and we read its values off the chart. Our run uses DEP2 on GB300 with no redundant experts, a 128-token replay and our own prompts. Because the setups differ, we do not read the gap between the two curves as an engine-to-engine speedup. What Figure 3 shows is that vLLM's DEP2 prefill tracks DeepSeek's own engine across the range they published.
 
 <iframe class="vllm-embed" src="/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/dsv41-pd-prefill-vs-deepinfer.html" title="프리필 곡선: vLLM DEP2 대 DeepInfer EP4DP4 / Prefill curve: vLLM DEP2 vs. DeepInfer EP4DP4" loading="lazy" scrolling="no" style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden;"></iframe>
 
-*그림 3: 새 토큰 수에 따른 프리필 처리량. GB300 위의 vLLM DEP2와 DeepInfer가 공개한 곡선(EP4DP4, 중복 전문가 32개, 140토큰 리플레이, 하드웨어 미기재)을 비교했으며, DeepInfer 값은 README의 차트에서 읽었습니다([출처](https://github.com/deepseek-ai/DeepInfer)). / Figure 3: Prefill throughput vs. new tokens. vLLM DEP2 on GB300 vs. DeepInfer's published curve (EP4DP4, 32 redundant experts, 140-token replay, hardware not stated), read from the chart in its README ([source](https://github.com/deepseek-ai/DeepInfer)).*
+*그림 3: 새 토큰 수에 따른 프리필 처리량. GB300에서 실행한 vLLM DEP2와 DeepInfer가 공개한 곡선(EP4DP4, 중복 전문가 32개, 140토큰 리플레이, 하드웨어 미기재)을 비교했으며, DeepInfer 값은 README의 차트에서 읽었습니다([출처](https://github.com/deepseek-ai/DeepInfer)). / Figure 3: Prefill throughput vs. new tokens. vLLM DEP2 on GB300 vs. DeepInfer's published curve (EP4DP4, 32 redundant experts, 140-token replay, hardware not stated), read from the chart in its README ([source](https://github.com/deepseek-ai/DeepInfer)).*
 
 두 엔진의 결과가 가까운 이유는 두 엔진이 서로 기술을 주고받아 온 관계이기 때문입니다. DeepInfer는 원래 vLLM을 기반으로 만들어졌습니다. vLLM 역시 MegaAttn, MegaMoE, Mega-mHC를 포함한 DeepSeek 라이브러리의 커널을 꾸준히 통합해 왔고, 그 커널을 중심으로 스택의 나머지 부분을 폭넓게 최적화했습니다. DeepInfer는 오프라인 모드에서 단일 모델만을 대상으로 합니다. 반면 같은 vLLM 빌드는 NVL72 랙 전체에 걸쳐 P/D 분리와 Wide-EP를 적용해 이 모델을 온라인으로도 서빙하며, 이 글의 나머지 부분에서 측정하는 것이 바로 이 구성입니다. 이어지는 섹션에서 그 작업을 설명합니다.
 > The two engines land close because they share a lineage in both directions. DeepInfer was originally built on vLLM, and vLLM in turn has continuously integrated kernels from DeepSeek's libraries, including MegaAttn, MegaMoE and Mega-mHC, and has extensively optimized the rest of the stack around them. DeepInfer targets a single model in offline mode; the same vLLM build also serves this model online with P/D disaggregation and Wide-EP across a full NVL72 rack, which is what the rest of this post measures. The sections that follow describe that work.
@@ -119,7 +120,7 @@ org_link: https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep
 
 ### 프리필: DEP2가 가장 좋습니다 / Prefill: DEP2 works best
 
-앞에서 설명했듯이, 프리필에는 작은 DEP 크기가 유리합니다. 동시성 256의 AgentX 프리필 전용 실행에서 DEP4의 GPU당 처리량은 DEP2의 83%에 그쳤습니다(53.3K 대 64.4K tokens/s). 프리픽스 캐싱(prefix caching)을 끄고 미러 재실행과 지연 재실행을 비교한 결과는 DP 불균형을 원인으로 가리킵니다. 랭크들의 진행 시점이 어긋나면 DEP4는 처리량의 13.6%를 잃습니다.[^earlier-build] 그래서 DEP2를 간단한 기본값으로 삼았습니다.
+앞에서 설명했듯이, 프리필에는 작은 DEP 크기가 유리합니다. 동시성 256의 AgentX 프리필 전용 실행에서 DEP4의 GPU당 처리량은 DEP2의 83%에 그쳤습니다(53.3K 대 64.4K tokens/s). 프리픽스 캐싱(prefix caching)을 끄고 미러 재실행과 지연 재실행을 비교한 결과는 DP 불균형을 원인으로 지목합니다. 랭크들의 진행 시점이 어긋나면 DEP4는 처리량의 13.6%를 잃습니다.[^earlier-build] 그래서 DEP2를 간단한 기본값으로 삼았습니다.
 > As discussed above, a small DEP size is appealing for prefill. In an AgentX prefill-only run at concurrency 256, DEP4 gave only 83% of DEP2's per-GPU throughput (53.3K vs. 64.4K tokens/s). Mirror and lag replays with prefix caching off point to DP imbalance: when the ranks fall out of step, DEP4 loses 13.6% of its throughput.[^earlier-build] This makes DEP2 a simple default for us.
 
 | 인스턴스당 프리필 처리량 (tokens/s) / Prefill throughput per instance (tokens/s) | 미러 (균형) / mirror (balanced) | 지연 (불균형) / lag (imbalanced) | 손실 / loss |
@@ -182,7 +183,7 @@ Engram은 DP 랭크들이 공유하는 호스트 테이블에서 무작위 읽�
 
 #### EPLB
 
-EPLB가 직전 1,000 스텝의 부하를 바탕으로 3,000 스텝마다 전문가를 재배치하도록 했습니다. EPLB는 균형도를 타깃에서 0.35에서 0.94로, 드래프트에서 0.21에서 0.89로 끌어올려, 균등 라우팅과의 차이를 각각 약 97%와 93% 회복합니다.
+EPLB가 직전 1,000 스텝의 부하를 바탕으로 3,000 스텝마다 전문가를 재배치하도록 했습니다. EPLB는 균형도를 타깃에서 0.35에서 0.94로, 드래프트에서 0.21에서 0.89로 끌어올려, 균등 라우팅과의 차이 가운데 각각 약 97%와 93%를 메웁니다.
 > We let EPLB rearrange the experts every 3,000 steps, based on the load of the previous 1,000 steps. EPLB raises balancedness from 0.35 to 0.94 for the target and from 0.21 to 0.89 for the draft, recovering about 97% and 93% of the gap to uniform routing.
 
 <iframe class="vllm-embed" src="/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/dsv41-pd-eplb.html" title="Wide EP 환경의 EPLB: 균형, 스텝 시간, 처리량 / EPLB at wide EP: balance, step time and throughput" loading="lazy" scrolling="no" style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden;"></iframe>
@@ -194,7 +195,7 @@ EPLB가 직전 1,000 스텝의 부하를 바탕으로 3,000 스텝마다 전문�
 
 ### 빠른 대규모 디코드에서 CPU 오버헤드 극복하기 / Overcome CPU overhead in fast large-scale decode
 
-Wide-EP 디코드는 레이어마다 모든 랭크를 동기화하므로, 랭크 하나만 느려도 인스턴스 전체가 멈춥니다. 비동기 스케줄링(async scheduling)은 작은 규모에서는 CPU 오버헤드를 잘 숨기지만, 랭크가 많아지면 두 가지 이유로 어려워집니다. GPU 스텝이 짧아져 CPU 작업에 쓸 여유가 줄어들고, 어느 한 랭크가 뒤처질 가능성도 커집니다.
+Wide-EP 디코드는 레이어마다 모든 랭크를 동기화하므로, 랭크 하나만 느려도 인스턴스 전체가 멈춥니다. 비동기 스케줄링(async scheduling)은 작은 규모에서는 CPU 오버헤드를 잘 숨기지만, 랭크가 많아지면 두 가지 이유로 CPU 오버헤드를 숨기기 어려워집니다. GPU 스텝이 짧아져 CPU 작업에 쓸 여유가 줄어들고, 어느 한 랭크가 뒤처질 가능성도 커집니다.
 > Wide-EP decode synchronizes all ranks at every layer, so one slow rank stalls the instance. Async scheduling hides CPU overhead well at a small scale, but more ranks make this harder in two ways: GPU steps get shorter, which leaves less slack for CPU work, and it becomes more likely that one rank falls behind.
 
 실제로 측정해 보니, 최적화하지 않은 DEP32가 GPU 실행은 1.1 ms 더 빨랐는데도 DEP16보다 느렸습니다(스텝당 17.57 ms 대 13.84 ms). 아래 표는 찾아낸 모든 원인을 효과가 큰 순서대로 정리한 것입니다. 효과는 서로 다른 구성에서 측정했으므로, 각 행에 해당 구성을 함께 적었습니다.
@@ -217,7 +218,7 @@ Wide-EP 디코드는 레이어마다 모든 랭크를 동기화하므로, 랭크
 또한 DeepSeek-V4.1-Flash의 저지연 커널 지원을 확장했습니다([#61868](https://github.com/vllm-project/vllm/pull/61868), [#61869](https://github.com/vllm-project/vllm/pull/61869)). 이는 [이전 글](https://vllm.ai/blog/2026-10-16-kimi-k3-megakernel)에서 이어지는 작업입니다. 실제 AgentX 세션에서 특화된 디코드 경로는 B300 GPU 4개로 단일 사용자 기준 P90 826 tokens/s에 도달했으며, 이는 표준 디코드 경로(575)보다 44% 높습니다.
 > We also extended low-latency kernel support for DeepSeek-V4.1-Flash ([#61868](https://github.com/vllm-project/vllm/pull/61868) and [#61869](https://github.com/vllm-project/vllm/pull/61869)), continuing the efforts from our [previous post](https://vllm.ai/blog/2026-10-16-kimi-k3-megakernel). On real AgentX sessions, the specialized decode path reaches 826 P90 tokens/s for a single user on four B300 GPUs, 44% higher than the standard decode path (575).
 
-<iframe class="vllm-embed" src="/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/dsv41-pd-low-latency.html" title="B300에서 TP4, 동시성 1, 8, 16일 때 SemiAnalysis AgentX의 P90 상호작용성, InferenceX #4332 적용 전후 / P90 interactivity on SemiAnalysis AgentX with TP4 on B300 at concurrency 1, 8 and 16, before and after InferenceX #4332" loading="lazy" scrolling="no" style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden;"></iframe>
+<iframe class="vllm-embed" src="/assets/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep/dsv41-pd-low-latency.html" title="B300에서 TP4, 동시성 1, 8, 16일 때 SemiAnalysis AgentX의 P90 사용자당 속도(interactivity), InferenceX #4332 적용 전후 / P90 interactivity on SemiAnalysis AgentX with TP4 on B300 at concurrency 1, 8 and 16, before and after InferenceX #4332" loading="lazy" scrolling="no" style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden;"></iframe>
 
 *그림 7: B300 GPU 4개에서 TP4, 동시성 1, 8, 16일 때의 SemiAnalysis AgentX 결과. [InferenceX #4332](https://github.com/SemiAnalysisAI/InferenceX/pull/4332)가 특화된 디코드 경로로 전환하기 전과 후를 비교했습니다. / Figure 7: SemiAnalysis AgentX with TP4 on four B300 GPUs at concurrency 1, 8 and 16, before and after [InferenceX #4332](https://github.com/SemiAnalysisAI/InferenceX/pull/4332) switched to the specialized decode path.*
 
