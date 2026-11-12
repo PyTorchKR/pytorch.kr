@@ -18,7 +18,8 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Ruby 3.4.5 has a prebuilt binary for Ubuntu 24.04.
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v3
     - name: Set up Node.js
