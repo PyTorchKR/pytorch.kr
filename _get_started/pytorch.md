@@ -123,25 +123,25 @@ Earlier this year, we started working on TorchDynamo, an approach that uses a CP
 
 For a new compiler backend for PyTorch 2.0, we took inspiration from how our users were writing high performance custom kernels: increasingly using the [Triton](https://github.com/openai/triton) language. We also wanted a compiler backend that used similar abstractions to PyTorch eager, and was general purpose enough to support the wide breadth of features in PyTorch. TorchInductor uses a pythonic define-by-run loop level IR to automatically map PyTorch models into generated Triton code on GPUs and C++/OpenMP on CPUs. TorchInductor’s core loop level IR contains only ~50 operators, and it is implemented in Python, making it easily hackable and extensible.
 
-### AOTAutograd: reusing Autograd for ahead-of-time graphs
+### AOTAutograd: 사전 그래프 생성을 위한 Autograd 재사용
 
-For PyTorch 2.0, we knew that we wanted to accelerate training. Thus, it was critical that we not only captured user-level code, but also that we captured backpropagation. Moreover, we knew that we wanted to reuse the existing battle-tested PyTorch autograd system. AOTAutograd leverages PyTorch’s **torch_dispatch** extensibility mechanism to trace through our Autograd engine, allowing us to capture the backwards pass “ahead-of-time”. This allows us to accelerate both our forwards _and_ backwards pass using TorchInductor.
+PyTorch 2.0의 목표는 학습 속도를 향상시키는 것이었습니다. 이를 위해 사용자 코드뿐만 아니라 역전파(backpropagation) 과정도 캡처하는 것이 중요해졌습니다. 또한, 검증된 PyTorch Autograd 시스템을 그대로 활용하고자 했습니다. AOTAutograd는 PyTorch의 torch_dispatch 확장 메커니즘을 활용해 Autograd 엔진을 추적함으로써 역전파 과정을 추적하고 준비할 수 있습니다. 이로써 TorchInductor를 사용해 순방향과 역방향 계산 모두 가속화되었습니다.
 
-### PrimTorch: Stable Primitive operators
+### PrimTorch: 안정적인 기초 연산자
 
-Writing a backend for PyTorch is challenging. PyTorch has 1200+ operators, and 2000+ if you consider various overloads for each operator.
+PyTorch의 백엔드를 작성하는 것은 매우 어려운 작업입니다. PyTorch에는 1200개 이상의 연산자가 있으며, 각 연산자의 다양한 오버로드를 고려하면 2000개가 넘습니다.
 
 <p>
 <img src="/assets/images/pytorch-2.0-img5.png" width="90%">
 <center> <i> <u> A breakdown of the 2000+ PyTorch operators </u></i> </center>
 </p>
 
-Hence, writing a backend or a cross-cutting feature becomes a draining endeavor. Within the PrimTorch project, we are working on defining smaller and stable operator sets. PyTorch programs can consistently be lowered to these operator sets. We aim to define two operator sets:
+따라서, 백엔드 작업이나 크로스컷팅 기능 구현은 매우 고된 작업이 됩니다. PrimTorch 프로젝트에서는 더 작고 안정적인 연산자 집합을 정의하는 작업을 진행 중입니다. PyTorch 프로그램이 일관되게 이러한 연산자 집합으로 변환될 수 있도록 하는 것이 목표입니다. 우리는 두 가지 연산자 집합을 정의하려고 합니다.
 
 - Prim ops with about ~250 operators, which are fairly low-level. These are suited for compilers because they are low-level enough that you need to fuse them back together to get good performance.
 - ATen ops with about ~750 canonical operators and suited for exporting as-is. These are suited for backends that already integrate at the ATen level or backends that won't have compilation to recover performance from a lower-level operator set like Prim ops.
 
-We discuss more about this topic below in the Developer/Vendor Experience section
+이 주제에 대해서는 아래의 개발자/벤더 경험 섹션에서 더 자세히 다룹니다.
 
 ## User Experience
 
